@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@gunungsarisedana.com'],
             [
                 'name' => 'Administrator',
-                'password' => bcrypt('JunKaivan-20222'),
+                'password' => bcrypt('JunKaivan-2022'),
             ]
         );
 
