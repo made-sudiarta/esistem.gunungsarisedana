@@ -33,13 +33,7 @@ class SimpananBerjangkaResource extends Resource
     {
         return $form
            ->schema([
-                // Forms\Components\TextInput::make('no')->required()->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('kode_bilyet')->required()->unique(ignoreRecord: true),
-                // Forms\Components\Select::make('id')
-                //     ->relationship('group', 'group')
-                //     ->label('Group')
-                //     ->searchable()
-                //     ->required(),
                 Forms\Components\Select::make('group_id')
                     ->label('Kolektor')
                     ->relationship('group', 'group')
@@ -78,7 +72,6 @@ class SimpananBerjangkaResource extends Resource
                 Tables\Columns\TextColumn::make('kode_bilyet')->label('No. Acc')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('group.group')->label('Group')->sortable(),
                 Tables\Columns\TextColumn::make('nama_lengkap')->label('Nama Lengkap')->searchable()->sortable(),
-                // Tables\Columns\TextColumn::make('tanggal_masuk')->date(),
                 Tables\Columns\TextColumn::make('tanggal_masuk')
                 ->sortable()
                 ->searchable()
@@ -89,13 +82,11 @@ class SimpananBerjangkaResource extends Resource
                 
                 ->label('Tanggal Jatuh Tempo')
                 ->getStateUsing(function ($record) {
-                    // Tambah jangka waktu (bulan) ke tanggal masuk
                     return \Carbon\Carbon::parse($record->tanggal_masuk)
                         ->addMonths($record->jangka_waktu)
                         ->format('d-m-Y');
                 })
                 ->searchable(query: function ($query, $search) {
-                    // Hitung tanggal jatuh tempo di SQL agar bisa di-search
                     return $query->whereRaw("
                         DATE_FORMAT(
                             DATE_ADD(tanggal_masuk, INTERVAL jangka_waktu MONTH),
@@ -110,7 +101,6 @@ class SimpananBerjangkaResource extends Resource
                 ->formatStateUsing(fn ($state) => 'Rp' . number_format($state, 0, ',', '.'))
                 ->sortable(),
 
-                // ✅ Tambahan: Bunga Bulan Ini
                 Tables\Columns\TextColumn::make('bunga_bulan_ini')
                     ->label('Bunga Bulan Ini')
                     ->getStateUsing(function ($record) {
@@ -150,7 +140,6 @@ class SimpananBerjangkaResource extends Resource
                         $ids = $records->pluck('id')->implode(',');
                         $url = route('cetak-struk-bulk', ['ids' => $ids]);
 
-                        // 🔥 Gunakan dispatch sama seperti Action biasa
                         $livewire->dispatch('open-new-tab', url: $url);
                     }),
 

@@ -214,7 +214,8 @@ class MemberResource extends Resource
                     ->icon('heroicon-o-credit-card')
                     ->label('ID Card')
                     ->url(fn ($record) => route('print.member', ['record' => $record]))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('trx_simpanan_pokok')),
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
