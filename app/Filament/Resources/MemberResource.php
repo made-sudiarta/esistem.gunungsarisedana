@@ -153,9 +153,9 @@ class MemberResource extends Resource
         return $table
             ->defaultSort('nia', 'asc')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->searchable()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('id')
+                //     ->searchable()
+                //     ->sortable(),
                 Tables\Columns\TextColumn::make('nia')
                     ->formatStateUsing(fn ($state) => str_pad($state, 5, '0', STR_PAD_LEFT))
                     ->searchable()
