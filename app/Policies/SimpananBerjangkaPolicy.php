@@ -16,7 +16,7 @@ class SimpananBerjangkaPolicy
     public function before(User $user, $ability)
     {
         if ($user->hasRole('super_admin')) {
-            return false; // Super Admin bisa melakukan semua aksi
+            return true; // Super Admin bisa melakukan semua aksi
         }
     }
 
