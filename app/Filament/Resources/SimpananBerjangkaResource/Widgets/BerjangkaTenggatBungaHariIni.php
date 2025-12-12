@@ -6,7 +6,7 @@ use Filament\Widgets\Widget;
 use App\Models\SimpananBerjangka;
 use Carbon\Carbon;
 
-class TenggatBungaHariIni extends Widget
+class BerjangkaTenggatBungaHariIni extends Widget
 {
     protected static string $view = 'filament.widgets.tenggat-bunga-hari-ini';
 
