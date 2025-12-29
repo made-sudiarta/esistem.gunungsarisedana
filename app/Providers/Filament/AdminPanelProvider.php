@@ -48,14 +48,14 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            // ->renderHook(
-            //     'panels::head.end',
-            //     fn () =>"<script>
-            //             window.addEventListener('open-new-tab', event => {
-            //                 window.open(event.detail.url, '_blank');
-            //             });
-            //         </script>"
-            // )
+            ->renderHook(
+                'panels::head.end',
+                fn () =>"<script>
+                        window.addEventListener('open-new-tab', event => {
+                            window.open(event.detail.url, '_blank');
+                        });
+                    </script>"
+            )
 
             ->middleware([
                 EncryptCookies::class,
@@ -71,14 +71,14 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            // ->renderHook(
-            //             'panels::head.end',
-            //             fn () => '<style>
-            //                 .custom-auth-empty-panel{
-            //                     width: 100% !important;
-            //                 }
-            //             </style>'
-            //         )
+            ->renderHook(
+                        'panels::head.end',
+                        fn () => '<style>
+                            .custom-auth-empty-panel{
+                                width: 100% !important;
+                            }
+                        </style>'
+                    )
 
 
             ->plugins([
@@ -88,7 +88,7 @@ class AdminPanelProvider extends PanelProvider
                     ->emptyPanelBackgroundImageUrl('https://images.pexels.com/photos/20237836/pexels-photo-20237836.jpeg')
                     ->emptyPanelBackgroundImageOpacity('70%')
                     ->showEmptyPanelOnMobile(false)
-                    ->formPanelWidth('100%')
+                    // ->formPanelWidth('100%')
             ]);
     }
 }
