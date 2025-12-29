@@ -132,7 +132,7 @@
             . '/'
             . $tglPengajuan->year;
 
-        $sisaPokok = $record->plafond;
+        $sisaPokok = $record->plafond + ($record->plafond*$record->bunga_persen/100)+ ($record->plafond*$record->admin_persen/100);
     @endphp
 
     {{-- KOP --}}
@@ -171,7 +171,7 @@
             <td>
                 Rp {{
                     number_format(
-                        $record->plafond - $record->transaksis->sum('jumlah'),
+                        $sisaPokok - $record->transaksis->sum('jumlah'),
                         0, ',', '.'
                     )
                 }}
