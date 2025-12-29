@@ -48,14 +48,14 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            ->renderHook(
-                'panels::head.end',
-                fn () =>"<script>
-                        window.addEventListener('open-new-tab', event => {
-                            window.open(event.detail.url, '_blank');
-                        });
-                    </script>"
-            )
+            // ->renderHook(
+            //     'panels::head.end',
+            //     fn () =>"<script>
+            //             window.addEventListener('open-new-tab', event => {
+            //                 window.open(event.detail.url, '_blank');
+            //             });
+            //         </script>"
+            // )
 
             ->middleware([
                 EncryptCookies::class,
@@ -80,17 +80,6 @@ class AdminPanelProvider extends PanelProvider
             //             </style>'
             //         )
 
-            ->renderHook(
-                'panels::head.end',
-                fn () => '<style>
-                    .custom-auth-empty-panel {
-                        width: 100% !important;      /* full width */
-                        min-height: 100vh !important; /* full tinggi layar */
-                        background-size: cover !important;
-                        background-position: center !important;
-                    }
-                </style>'
-            )
 
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
