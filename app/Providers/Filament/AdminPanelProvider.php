@@ -74,38 +74,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
 
-            ->renderHook(
-                'panels::head.end',
-                fn () => <<<'HTML'
-                <style>
-                    .auth-ui-enhancer-wrapper {
-                        display: flex !important;
-                    }
-                    .custom-auth-empty-panel{
-                        width: 100% !important;
-                    }
-
-                    .auth-ui-enhancer-form-panel {
-                        flex: 0 0 50% !important;
-                        max-width: 50% !important;
-                    }
-
-                    .auth-ui-enhancer-empty-panel {
-                        flex: 0 0 50% !important;
-                        max-width: 50% !important;
-                    }
-
-                    /* Mobile */
-                    @media (max-width: 1024px) {
-                        .auth-ui-enhancer-form-panel,
-                        .auth-ui-enhancer-empty-panel {
-                            flex: 0 0 100% !important;
-                            max-width: 100% !important;
-                        }
-                    }
-                </style>
-                HTML
-            )
+            
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 AuthUIEnhancerPlugin::make()
