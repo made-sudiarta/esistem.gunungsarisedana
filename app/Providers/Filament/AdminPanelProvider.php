@@ -73,6 +73,14 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->renderHook(
+                        'panels::head.end',
+                        fn () => '<style>
+                            .custom-auth-empty-panel{
+                                width: 100% !important;
+                            }
+                        </style>'
+                    )
 
             
             ->plugins([
@@ -81,7 +89,8 @@ class AdminPanelProvider extends PanelProvider
                     ->formPanelPosition('right')
                     ->emptyPanelBackgroundImageUrl('https://images.pexels.com/photos/20237836/pexels-photo-20237836.jpeg')
                     ->emptyPanelBackgroundImageOpacity('70%')
-                    ->showEmptyPanelOnMobile(false),
+                    ->showEmptyPanelOnMobile(false)
+                    
             ]);
     }
 }
