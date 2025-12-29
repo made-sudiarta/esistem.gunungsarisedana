@@ -50,13 +50,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.end',
-                fn () => <<<'HTML'
-                    <script>
+                fn () =>"<script>
                         window.addEventListener('open-new-tab', event => {
                             window.open(event.detail.url, '_blank');
                         });
-                    </script>
-                HTML
+                    </script>"
             )
 
             ->middleware([
