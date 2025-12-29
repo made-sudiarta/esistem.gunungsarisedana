@@ -210,7 +210,7 @@ class ListSimpananBerjangkas extends ListRecords
 
                 $query = http_build_query(['filters' => $filters]);
 
-                return route('print.simpanan-berjangka') . '?' . $query;
+                return route('print.simpanan-berjangka.index') . '?' . $query;
             })
             ->openUrlInNewTab(),
 
