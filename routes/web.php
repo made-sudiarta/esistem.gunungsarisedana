@@ -31,10 +31,10 @@ Route::get('/print/member/{record}', [CetakMemberController::class, 'show'])->na
 Route::get('/print/members', [PrintController::class, 'printAll'])->name('print.members.all');
 
 Route::get('/print/simpanan-berjangka/{record}', [PrintSimpananBerjangkaController::class, 'show'])
-    ->name('print.simpanan-berjangka');
+    ->name('print.simpanan-berjangka.show');
 
 Route::get('/print-simpanan-berjangka', [App\Http\Controllers\PrintSimpananBerjangkaController::class, 'index'])
-    ->name('print.simpanan-berjangka');
+    ->name('print.simpanan-berjangka.index');
 Route::get('/simpanan-berjangka/print-struk', 
     [\App\Http\Controllers\PrintSimpananBerjangkaController::class, 'printStruk']
 )->name('simpanan-berjangka.print-struk');
