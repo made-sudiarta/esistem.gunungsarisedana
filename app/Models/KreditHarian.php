@@ -22,6 +22,7 @@ class KreditHarian extends Model
         'plafond',
         'bunga_persen',
         'admin_persen',
+        'sisa_pokok'
     ];
 
     public function member()
@@ -41,4 +42,28 @@ class KreditHarian extends Model
 
         return $total / $this->jangka_waktu;
     }
+
+    public function transaksis()
+    {
+        return $this->hasMany(KreditHarianTransaksi::class);
+    }
+    public function getStatusAttribute(): string
+    {
+        return $this->sisa_pokok <= 0 ? 'lunas' : 'aktif';
+    }
+
+    public function getSisaPokokAttribute(): float
+    {
+        $plafond = $this->plafond ?? 0;
+        $bunga = $this->bunga_persen ?? 0;
+        $admin = $this->admin_persen ?? 0;
+
+        $totalKredit = $plafond + ($plafond * ($bunga + $admin) / 100);
+
+        $totalBayar = $this->transaksis()->sum('jumlah');
+
+        return max($totalKredit - $totalBayar, 0);
+    }
+
+
 }

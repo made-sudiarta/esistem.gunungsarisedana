@@ -15,6 +15,9 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+
+use App\Filament\Resources\KreditHarianResource\RelationManagers\TransaksisRelationManager;
 
 class KreditHarianResource extends Resource
 {
@@ -27,6 +30,14 @@ class KreditHarianResource extends Resource
     protected static ?string $modelLabel = 'Pinjaman Harian';
     protected static ?string $pluralModelLabel = 'Pinjaman Harian';
     protected static ?string $title = 'Pinjaman Harian';
+
+
+    public static function getRelations(): array
+    {
+        return [
+            TransaksisRelationManager::class,
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -114,6 +125,30 @@ class KreditHarianResource extends Resource
                     ->numeric()
                     ->required()
                     ->columnSpan(1),
+
+                TextInput::make('sisa_pokok_preview')
+                    ->label('Total Tagihan (Plafond + Bunga + Admin)')
+                    ->disabled()
+                    ->dehydrated(false) // ⬅️ tidak dikirim ke backend
+                    ->reactive()
+                    ->afterStateHydrated(function ($state, callable $set, callable $get) {
+                        $plafond = $get('plafond') ?? 0;
+                        $bunga = $get('bunga_persen') ?? 0;
+                        $admin = $get('admin_persen') ?? 0;
+
+                        $total = $plafond + ($plafond * ($bunga + $admin) / 100);
+                        $set('sisa_pokok_preview', number_format($total, 2));
+                    })
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $plafond = $get('plafond') ?? 0;
+                        $bunga = $get('bunga_persen') ?? 0;
+                        $admin = $get('admin_persen') ?? 0;
+
+                        $total = $plafond + ($plafond * ($bunga + $admin) / 100);
+                        $set('sisa_pokok_preview', number_format($total, 2));
+                    })
+                    ->columnSpan(1),
+
             ])
             ->columns(3);
 
@@ -160,15 +195,8 @@ class KreditHarianResource extends Resource
                     ->sortable(),
                 TextColumn::make('sisa_pokok')
                     ->label('Sisa Pokok')
-                    ->getStateUsing(function ($record) {
-                        $plafond = $record->plafond ?? 0;
-                        $bunga = $record->bunga_persen ?? 0;
-                        $admin = $record->admin_persen ?? 0;
+                    ->money('idr', true),
 
-                        $total = $plafond + ($plafond * ($bunga + $admin) / 100);
-                        return $total;
-                    })
-                    ->money('idr', true), // format mata uang
 
                 TextColumn::make('bunga_persen')->suffix('%'),
                 TextColumn::make('admin_persen')->suffix('%'),
@@ -182,6 +210,11 @@ class KreditHarianResource extends Resource
                     }),
 
                 TextColumn::make('cicilan_harian')->label('Cicilan/Hari')->money('idr', true),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state) => $state === 'lunas' ? 'success' : 'warning'),
+
             ])
             ->filters([
                 // bisa ditambah filter Member/Group/Tanggal
@@ -196,9 +229,14 @@ class KreditHarianResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('print')
+                    ->label('Print')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn ($record) => static::getUrl('print', ['record' => $record]))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                // Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
@@ -207,7 +245,20 @@ class KreditHarianResource extends Resource
         return [
             'index' => Pages\ListKreditHarians::route('/'),
             'create' => Pages\CreateKreditHarian::route('/create'),
+            'view' => Pages\ViewKreditHarian::route('/{record}'),
             'edit' => Pages\EditKreditHarian::route('/{record}/edit'),
+            'print' => Pages\PrintKreditHarian::route('/{record}/print'),
         ];
     }
+    public static function canEdit(Model $record): bool
+    {
+        return $record->transaksis()->count() === 0
+            && $record->status === 'aktif';
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return $record->transaksis()->count() === 0;
+    }
+
 }

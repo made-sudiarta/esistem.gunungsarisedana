@@ -16,4 +16,16 @@ class EditKreditHarian extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $plafond = $data['plafond'];
+        $bunga = $data['bunga_persen'];
+        $admin = $data['admin_persen'];
+
+        $data['sisa_pokok'] =
+            $plafond + ($plafond * ($bunga + $admin) / 100);
+
+        return $data;
+    }
+
 }
