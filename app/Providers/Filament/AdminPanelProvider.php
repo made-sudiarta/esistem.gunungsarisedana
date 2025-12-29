@@ -73,14 +73,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->renderHook(
-                        'panels::head.end',
-                        fn () => '<style>
-                            .custom-auth-empty-panel{
-                                width: 100% !important;
-                            }
-                        </style>'
-                    )
+            
 
             
             ->plugins([
