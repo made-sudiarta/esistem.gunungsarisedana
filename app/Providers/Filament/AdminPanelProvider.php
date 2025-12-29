@@ -18,6 +18,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
             ->brandName('E-Sistem Koperasi')
             ->colors([
                 'primary' => Color::Green,
@@ -71,8 +73,49 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+
+            ->renderHook(
+                'panels::head.end',
+                fn () => <<<'HTML'
+            <style>
+            /* Force 50/50 split */
+            .auth-ui-enhancer-wrapper {
+                display: flex !important;
+            }
+            .custom-auth-empty-panel{
+                width: 100% !important;
+            }
+
+            .auth-ui-enhancer-form-panel {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+
+            .auth-ui-enhancer-empty-panel {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+
+            /* Mobile */
+            @media (max-width: 1024px) {
+                .auth-ui-enhancer-form-panel,
+                .auth-ui-enhancer-empty-panel {
+                    flex: 0 0 100% !important;
+                    max-width: 100% !important;
+                }
+            }
+            </style>
+            HTML
+            )
+
+
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                AuthUIEnhancerPlugin::make()
+                    ->formPanelPosition('right')
+                    ->emptyPanelBackgroundImageUrl('https://images.pexels.com/photos/20237836/pexels-photo-20237836.jpeg')
+                    ->emptyPanelBackgroundImageOpacity('70%')
+                    ->showEmptyPanelOnMobile(false),
             ]);
     }
 }
