@@ -17,6 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
+
 use App\Filament\Resources\KreditHarianResource\RelationManagers\TransaksisRelationManager;
 
 class KreditHarianResource extends Resource
@@ -32,6 +33,7 @@ class KreditHarianResource extends Resource
     protected static ?string $title = 'Pinjaman Harian';
 
 
+    
     public static function getRelations(): array
     {
         return [

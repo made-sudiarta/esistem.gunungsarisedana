@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\KreditHarianResource\Pages;
 
 use App\Filament\Resources\KreditHarianResource;
+use App\Filament\Resources\KreditHarianResource\Widgets\KreditHarianStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -14,6 +15,12 @@ class ListKreditHarians extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('Pinjaman Baru')->icon('heroicon-o-plus'),
+        ];
+    }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            KreditHarianStats::class,
         ];
     }
 }
