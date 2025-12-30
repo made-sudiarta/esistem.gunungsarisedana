@@ -7,6 +7,8 @@ use App\Models\TrxSukarela;
 use App\Observers\TrxSukarelaObserver;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Carbon;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         }
         TrxSukarela::observe(TrxSukarelaObserver::class);
 
-        Date::setLocale('id');
-        
+        // Date::setLocale('id');
+        Carbon::setLocale('id_ID');        
     }
 }
