@@ -12,6 +12,7 @@ class TanggalJamWidget extends Widget
 
     public function getTimeProperty(): string
     {
+        \Illuminate\Support\Carbon::setLocale('id');
         return now()
             ->setTimezone('Asia/Makassar')
             ->translatedFormat('H:i:s');

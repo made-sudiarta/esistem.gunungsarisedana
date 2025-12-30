@@ -8,6 +8,7 @@ use App\Filament\Widgets\PinjamanHarianChart;
 class Dashboard extends BaseDashboard
 {
     protected static ?string $title = 'Dashboard';
+    
 
     // GRID DASHBOARD
     public function getWidgetsColumns(): int

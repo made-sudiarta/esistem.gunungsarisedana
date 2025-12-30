@@ -28,7 +28,6 @@ class AppServiceProvider extends ServiceProvider
         }
         TrxSukarela::observe(TrxSukarelaObserver::class);
 
-        App::setLocale('id'); 
         Date::setLocale('id');
         
     }
