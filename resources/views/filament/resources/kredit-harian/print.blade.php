@@ -177,6 +177,17 @@
                 }}
             </td>
         </tr>
+        <tr>
+            <td>Tanggal Pengajuan</td>
+            <td>:</td>
+            <td>{{ \Carbon\Carbon::parse($record->tanggal_pengajuan)->translatedFormat('d F Y') }}</td>
+        </tr>
+        <tr>
+            <td>Tanggal Jatuh Tempo</td>
+            <td>:</td>
+            <td>{{ \Carbon\Carbon::parse($record->tanggal_pengajuan)->addDays($record->jangka_waktu)->translatedFormat('d F Y') }}</td>
+        </tr>
+
     </table>
 
     <br>
