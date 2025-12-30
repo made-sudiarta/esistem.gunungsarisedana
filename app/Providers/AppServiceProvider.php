@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\TrxSukarela;
 use App\Observers\TrxSukarelaObserver;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Date;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
         TrxSukarela::observe(TrxSukarelaObserver::class);
+
+        App::setLocale('id'); 
+        Date::setLocale('id');
         
     }
 }
