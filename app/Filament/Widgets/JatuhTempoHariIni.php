@@ -9,6 +9,14 @@ use Carbon\Carbon;
 class JatuhTempoHariIni extends Widget
 {
     protected static string $view = 'filament.widgets.jatuh-tempo-hari-ini';
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'md' => 6,
+        'xl' => 6,
+    ];
+
+    protected static ?int $sort = 3;
+    public $size = 'medium';
 
     // deklarasi public property agar tersedia di blade
     public $records;

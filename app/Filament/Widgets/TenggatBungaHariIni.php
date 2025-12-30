@@ -10,6 +10,15 @@ class TenggatBungaHariIni extends Widget
 {
     protected static string $view = 'filament.widgets.tenggat-bunga-hari-ini';
 
+
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'md' => 12,
+        'xl' => 12,
+    ];
+    protected static ?int $sort = 4; 
+
+
     public $records;
     public $total;
 

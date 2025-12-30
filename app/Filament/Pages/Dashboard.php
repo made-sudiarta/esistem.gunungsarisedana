@@ -3,19 +3,15 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
-use App\Filament\Widgets\TanggalJamWidget;
-use App\Filament\Widgets\TenggatBungaHariIni;
+use App\Filament\Widgets\PinjamanHarianChart;
 
 class Dashboard extends BaseDashboard
 {
     protected static ?string $title = 'Dashboard';
 
-    // PUBLIC, bukan protected
-    public function getWidgets(): array
+    // GRID DASHBOARD
+    public function getWidgetsColumns(): int
     {
-        return [
-            TanggalJamWidget::class,       // urutan 1
-            TenggatBungaHariIni::class,    // urutan 2
-        ];
+        return 12;
     }
 }
