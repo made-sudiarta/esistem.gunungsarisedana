@@ -34,7 +34,7 @@
                         Waktu (WITA)
                     </p>
 
-                    <span class="text-xl font-mono font-semibold text-slate-900 dark:text-white tracking-wide leading-none">
+                    <span class="text-2xl font-mono font-semibold text-slate-900 dark:text-white tracking-wide leading-none">
                         {{ $this->time }}
                     </span>
                 </div>
