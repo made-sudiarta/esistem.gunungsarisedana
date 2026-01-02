@@ -73,6 +73,7 @@
         /* RIWAYAT */
         table.riwayat th {
             border-bottom: 2px solid #A5a5a5;
+            background:#EEE !important;
             text-align: center;
         }
 
@@ -235,7 +236,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($record->transaksis->sortBy('tanggal_transaksi') as $trx)
+            @forelse ($record->transaksis->sortBy('tanggal_transaksi') as $trx)
                 @php $sisaPokok -= $trx->jumlah; @endphp
                 <tr>
                     <td>{{ $loop->iteration }}</td>
@@ -247,7 +248,13 @@
                         Rp {{ number_format(max(0, $sisaPokok), 0, ',', '.') }}
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="4" style="text-align:center; font-style:italic; padding:10px;">
+                        Tidak ada riwayat transaksi
+                    </td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 <!-- 
