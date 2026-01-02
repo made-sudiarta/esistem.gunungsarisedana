@@ -129,9 +129,15 @@ class SimpananBerjangkaResource extends Resource
             ])
             ->defaultSort('kode_bilyet', 'asc')
             ->filters([
-                SelectFilter::make('group_id')->relationship('group', 'group')->label('Group'),
-                SelectFilter::make('member_id')->relationship('member', 'nama_lengkap')->label('Anggota'),
-                Tables\Filters\TrashedFilter::make(), // Untuk soft delete
+                SelectFilter::make('group_id')->relationship('group', 'group')->label('Group') ->visible(fn () =>
+                Filament::auth()->user()?->hasRole('super_admin')
+            ),
+                SelectFilter::make('member_id')->relationship('member', 'nama_lengkap')->label('Anggota')->visible(fn () =>
+                Filament::auth()->user()?->hasRole('super_admin')
+            ),
+                Tables\Filters\TrashedFilter::make()->visible(fn () =>
+                Filament::auth()->user()?->hasRole('super_admin')
+            ), // Untuk soft delete
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
