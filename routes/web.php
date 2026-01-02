@@ -5,6 +5,8 @@ use App\Http\Controllers\PrintMemberController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\CetakMemberController;
 use App\Http\Controllers\PrintSimpananBerjangkaController;
+use App\Http\Controllers\KreditHarianPrintController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -50,3 +52,7 @@ Route::get('/prints/struk-bulk', [PrintSimpananBerjangkaController::class, 'ceta
     ->name('cetak-struk-bulk');
 
 
+Route::get(
+    '/admin/kredit-harian/print',
+    [KreditHarianPrintController::class, 'index']
+)->name('kredit-harian.print.index');
