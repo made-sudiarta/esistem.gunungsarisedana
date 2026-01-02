@@ -13,11 +13,11 @@ class PinjamanHarianChart extends ChartWidget
 
     protected int | string | array $columnSpan = [
         'default' => 12,
-        'md' => 6,
-        'xl' => 6,
+        'md' => 12,
+        'xl' => 12,
     ];
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 3;
 
     public static function canView(): bool
     {

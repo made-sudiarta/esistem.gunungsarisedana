@@ -17,7 +17,7 @@ class TenggatBungaHariIni extends Widget
         'md' => 12,
         'xl' => 12,
     ];
-    protected static ?int $sort = 4; 
+    protected static ?int $sort = 5; 
     public static function canView(): bool
     {
         return Filament::auth()->user()?->hasRole('super_admin') ?? false;

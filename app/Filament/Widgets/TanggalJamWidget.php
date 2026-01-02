@@ -7,8 +7,9 @@ use Filament\Widgets\Widget;
 class TanggalJamWidget extends Widget
 {
     protected static string $view = 'filament.widgets.tanggal-jam-widget';
+    
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 12;
+    protected int | string | array $columnSpan = 11;
 
     public function getTimeProperty(): string
     {

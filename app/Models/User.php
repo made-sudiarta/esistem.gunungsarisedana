@@ -52,4 +52,8 @@ class User extends Authenticatable
         return $this->belongsTo(Group::class);
     }
 
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class);
+    }
 }
