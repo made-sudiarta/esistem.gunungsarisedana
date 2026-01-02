@@ -105,6 +105,36 @@
             /* font-weight: bold; */
             text-decoration: underline;
         }
+
+        @media print {
+
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+
+            * {
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            html, body {
+                background: white !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-wrapper {
+                background: white !important;
+            }
+
+            header, nav, aside, footer,
+            .fi-topbar, .fi-sidebar, .fi-header {
+                display: none !important;
+            }
+        }
+
     </style>
 
     <script>
