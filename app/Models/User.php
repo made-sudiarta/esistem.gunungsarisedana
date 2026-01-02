@@ -43,8 +43,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    public function groups(): HasMany
+    // public function groups(): HasMany
+    // {
+    //     return $this->hasMany(Group::class);
+    // }
+    public function group()
     {
-        return $this->hasMany(Group::class);
+        return $this->belongsTo(Group::class);
     }
+
 }

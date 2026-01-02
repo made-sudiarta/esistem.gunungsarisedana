@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SimpananBerjangkaResource\Pages;
 use App\Filament\Resources\SimpananBerjangkaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms;
 use Illuminate\Support\HtmlString;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
 
 class ListSimpananBerjangkas extends ListRecords
@@ -26,6 +28,24 @@ class ListSimpananBerjangkas extends ListRecords
 
     protected static string $resource = SimpananBerjangkaResource::class;
 
+    
+    // public function mount(): void
+    // {
+    //     parent::mount();
+
+    //     // Ambil parameter dari URL
+    //     $status = request()->get('status');
+
+    //     // Set filter mode berdasarkan Stat Card
+    //     $this->filterMode = match($status) {
+    //         'jatuh_tempo' => 'jatuh_tempo',
+    //         'tenggat_bunga' => 'bunga',
+    //         default => 'all'
+    //     };
+
+    //     // refresh data
+    //     $this->refreshRecords();
+    // }
     public function mount(): void
     {
         parent::mount();
@@ -34,53 +54,105 @@ class ListSimpananBerjangkas extends ListRecords
         $status = request()->get('status');
 
         // Set filter mode berdasarkan Stat Card
-        $this->filterMode = match($status) {
-            'jatuh_tempo' => 'jatuh_tempo',
+        $this->filterMode = match ($status) {
+            'jatuh_tempo'   => 'jatuh_tempo',
             'tenggat_bunga' => 'bunga',
-            default => 'all'
+            default         => 'all',
         };
-
-        // refresh data
-        $this->refreshRecords();
     }
 
 
-    public function refreshRecords()
-    {
-        $today = Carbon::today();
 
-        $this->records = SimpananBerjangka::get()->filter(function ($item) use ($today) {
+    // public function refreshRecords()
+    // {
+    //     $today = Carbon::today();
 
-            // FILTER 1: JATUH TEMPO BULAN & TAHUN SAMA
-            if ($this->filterMode === 'jatuh_tempo') {
-                $jatuh = Carbon::parse($item->tanggal_masuk)->addMonths($item->jangka_waktu);
-                return $jatuh->month === $today->month && $jatuh->year === $today->year;
-            }
+    //     $this->records = SimpananBerjangka::get()->filter(function ($item) use ($today) {
 
-            // FILTER 2: BUNGA HARUS DICETAK (HARI SAMA)
-            if ($this->filterMode === 'bunga') {
-                $jatuh = Carbon::parse($item->tanggal_masuk)->addMonths($item->jangka_waktu);
-                return $jatuh->day === $today->day;
-            }
+    //         // FILTER 1: JATUH TEMPO BULAN & TAHUN SAMA
+    //         if ($this->filterMode === 'jatuh_tempo') {
+    //             $jatuh = Carbon::parse($item->tanggal_masuk)->addMonths($item->jangka_waktu);
+    //             return $jatuh->month === $today->month && $jatuh->year === $today->year;
+    //         }
 
-            // FILTER 3: SEMUA DATA
-            return true;
+    //         // FILTER 2: BUNGA HARUS DICETAK (HARI SAMA)
+    //         if ($this->filterMode === 'bunga') {
+    //             $jatuh = Carbon::parse($item->tanggal_masuk)->addMonths($item->jangka_waktu);
+    //             return $jatuh->day === $today->day;
+    //         }
+
+    //         // FILTER 3: SEMUA DATA
+    //         return true;
+    //     });
+    // }
+    // protected function getTableQuery(): ?Builder
+    // {
+    //     // Jika records belum di-refresh
+    //     if (!isset($this->records)) {
+    //         $this->refreshRecords();
+    //     }
+
+    //     // Ambil semua ID hasil filter
+    //     $ids = $this->records->pluck('id');
+
+    //     // Kembalikan query untuk tabel
+    //     return SimpananBerjangka::query()
+    //         ->whereIn('id', $ids);
+
+
+    //     // FILTER LOGIN 
+    //     $query = parent::getTableQuery()
+    //         ->withoutGlobalScopes([
+    //             SoftDeletingScope::class,
+    //     ]);
+
+    //     $user = Filament::auth()->user();
+
+    //     // Super Admin → lihat semua
+    //     if ($user->hasRole('super_admin')) {
+    //         return $query;
+    //     }
+
+    //     // Kolektor → hanya data group miliknya
+    //     return $query->whereHas('group', function (Builder $q) use ($user) {
+    //         $q->where('user_id', $user->id);
+    //     });
+    // }
+
+    protected function getTableQuery(): Builder
+{
+    $query = parent::getTableQuery()
+        ->withoutGlobalScopes([
+            SoftDeletingScope::class,
+        ]);
+
+    $user = Filament::auth()->user();
+    $today = Carbon::today();
+
+    // 🔐 FILTER ROLE
+    if (! $user->hasRole('super_admin')) {
+        $query->whereHas('group', function (Builder $q) use ($user) {
+            $q->where('user_id', $user->id);
         });
     }
-    protected function getTableQuery(): ?Builder
-    {
-        // Jika records belum di-refresh
-        if (!isset($this->records)) {
-            $this->refreshRecords();
-        }
 
-        // Ambil semua ID hasil filter
-        $ids = $this->records->pluck('id');
-
-        // Kembalikan query untuk tabel
-        return SimpananBerjangka::query()
-            ->whereIn('id', $ids);
+    // 📌 FILTER MODE (STAT CARD)
+    if ($this->filterMode === 'jatuh_tempo') {
+        $query->whereRaw("
+            MONTH(DATE_ADD(tanggal_masuk, INTERVAL jangka_waktu MONTH)) = ?
+            AND YEAR(DATE_ADD(tanggal_masuk, INTERVAL jangka_waktu MONTH)) = ?
+        ", [$today->month, $today->year]);
     }
+
+    if ($this->filterMode === 'bunga') {
+        $query->whereRaw("
+            DAY(DATE_ADD(tanggal_masuk, INTERVAL jangka_waktu MONTH)) = ?
+        ", [$today->day]);
+    }
+
+    return $query;
+}
+
 
     public function getTitle(): string
     {
@@ -140,110 +212,34 @@ class ListSimpananBerjangkas extends ListRecords
                         ->title('Import berhasil!')
                         ->success()
                         ->send();
-                }),
-
-            // Actions\Action::make('upload')
-            //     ->label('Upload')
-            //     ->icon('heroicon-o-arrow-up-tray')
-            //     ->color('info')
-            //     ->modalHeading('Upload Data Simpanan Berjangka')
-            //     ->modalSubheading('Unggah file Excel sesuai format template yang disediakan.')
-            //     ->form([
-            //         \Filament\Forms\Components\FileUpload::make('file')
-            //             ->label('File Excel (.xlsx)')
-            //             ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
-            //             ->directory('simpanan-berjangka-import') // <-- WAJIB
-            //             ->disk('public') // <-- WAJIB
-            //             ->preserveFilenames() // opsional
-            //             ->required(),
-            //     ])
-            //     ->action(function (array $data) {
-            //         $path = $data['file']; // contoh: simpanan-berjangka-import/nama.xlsx
-
-            //         $absolutePath = Storage::disk('public')->path($path);
-
-            //         Excel::import(new \App\Imports\SimpananBerjangkaImport, $absolutePath);
-
-            //         Notification::make()
-            //             ->title('Import berhasil!')
-            //             ->success()
-            //             ->send();
-            //     }),
-
-            // Actions\Action::make('download-template')
-            //     ->label('Template')
-            //     ->icon('heroicon-o-document-arrow-down')
-            //     ->color('success')
-            //     ->url(asset('templates/template-simpanan-berjangka.xlsx'))
-            //     ->openUrlInNewTab(),
-
-            // Actions\Action::make('print')
-            //     ->label('Print Data')
-            //     ->icon('heroicon-o-printer')
-            //     ->color('success')
-            //     ->url(function () {
-
-            //         // Ambil status dari URL (jatuh_tempo / tenggat_bunga / all)
-            //         $status = request()->get('status', 'all');
-
-            //         // Ambil filter table jika ada
-            //         $filters = request()->get('tableFilters', []);
-
-            //         // Kirim status + filters ke halaman cetak
-            //         $query = http_build_query([
-            //             'status' => $status,
-            //             'filters' => $filters,
-            //         ]);
-
-            //         return route('print.simpanan-berjangka') . '?' . $query;
-            //     })
-            //     ->openUrlInNewTab(),
-
-
+                })
+            ->visible(fn () =>
+                Filament::auth()->user()?->hasRole('super_admin')
+            ),
             Actions\Action::make('printData')
-            ->label('Print Data')
-            ->icon('heroicon-o-printer')
-            ->color('success')
-            ->url(function ($livewire) {
-                // Ambil filter aktif
-                $filters = $livewire->tableFilters ?? [];
+                ->label('Print Data')
+                ->icon('heroicon-o-printer')
+                ->color('success')
+                ->url(function ($livewire) {
+                    // Ambil filter aktif
+                    $filters = $livewire->tableFilters ?? [];
 
-                $query = http_build_query(['filters' => $filters]);
+                    $query = http_build_query(['filters' => $filters]);
 
-                return route('print.simpanan-berjangka.index') . '?' . $query;
-            })
-            ->openUrlInNewTab(),
-
-
-
-
-
+                    return route('print.simpanan-berjangka.index') . '?' . $query;
+                })
+                ->openUrlInNewTab()
+                ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
             Actions\Action::make('cetakStruk')
                 ->label('Struk Hari ini')
                 ->icon('heroicon-o-printer')
                 ->url(fn ($record) => route('simpanan-berjangka.print-struk'))
-                ->openUrlInNewTab(),
-
-            // Actions\Action::make('cetakPilihStruk')
-            //     ->label('Print Struk')
-            //     ->icon('heroicon-o-printer')
-            //     ->form([
-            //         DatePicker::make('tanggal_dari')->label('Dari Tanggal')->required(),
-            //         DatePicker::make('tanggal_sampai')->label('Sampai Tanggal')->required(),
-            //     ])
-            //     ->modalSubmitActionLabel('Cetak')
-            //     ->action(function (array $data, $livewire) {
-            //         $url = route('cetak-pilih-struk', [
-            //             'tanggal_dari' => $data['tanggal_dari'],
-            //             'tanggal_sampai' => $data['tanggal_sampai'],
-            //         ]);
-
-            //         // 🔥 Ini cara yang benar di Filament 3
-            //         $livewire->dispatch('open-new-tab', url: $url);
-            //     }),
-
-                
-
+                ->openUrlInNewTab()
+                ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
         ];
     }
     protected function getTableRecordUrlUsing(): ?\Closure

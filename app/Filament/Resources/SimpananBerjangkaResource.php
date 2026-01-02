@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Filters\TabsFilter;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Facades\Filament;
 
 use Filament\Tables\Filters\SelectFilter;
 
@@ -28,6 +29,23 @@ class SimpananBerjangkaResource extends Resource
     protected static ?string $title = 'Simpanan Berjangka';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     $query = parent::getEloquentQuery()
+    //         ->withoutGlobalScopes([
+    //             SoftDeletingScope::class,
+    //         ]);
+
+    //     $user = Filament::auth()->user();
+    //     if ($user->hasRole('super_admin')) {
+    //         return $query;
+    //     }
+    //     return $query->whereHas('group', function (Builder $q) use ($user) {
+    //         $q->where('user_id', $user->id);
+    //     });
+    // }
+    
 
     public static function form(Form $form): Form
     {
@@ -124,7 +142,10 @@ class SimpananBerjangkaResource extends Resource
                 ->label('Print')
                 ->icon('heroicon-o-printer')
                 ->url(fn ($record) => route('cetak-struk', $record->id))
-                ->openUrlInNewTab(),
+                ->openUrlInNewTab()
+                ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
 
             ])
             ->bulkActions([
@@ -141,9 +162,10 @@ class SimpananBerjangkaResource extends Resource
                         $url = route('cetak-struk-bulk', ['ids' => $ids]);
 
                         $livewire->dispatch('open-new-tab', url: $url);
-                    }),
-
-
+                    })
+                    ->visible(fn () =>
+                        Filament::auth()->user()?->hasRole('super_admin')
+                    ),
 
             ]);
     }
