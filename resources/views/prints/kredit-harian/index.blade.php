@@ -176,8 +176,16 @@
 </div>
 
 <script>
-    window.print();
+    window.onload = function () {
+        window.print();
+
+        // kasih jeda agar dialog print muncul dulu
+        setTimeout(() => {
+            window.close();
+        }, 500);
+    };
 </script>
+
 
 </body>
 </html>
