@@ -16,6 +16,9 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Facades\Filament;
+
 
 
 use App\Filament\Resources\KreditHarianResource\RelationManagers\TransaksisRelationManager;
@@ -39,6 +42,23 @@ class KreditHarianResource extends Resource
         return [
             TransaksisRelationManager::class,
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $user = Filament::auth()->user();
+
+        $query = parent::getEloquentQuery();
+
+        // Super Admin → lihat semua
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        // Kolektor → hanya data group miliknya
+        return $query->whereHas('group', function (Builder $q) use ($user) {
+            $q->where('user_id', $user->id);
+        });
     }
 
     public static function form(Form $form): Form
@@ -225,17 +245,30 @@ class KreditHarianResource extends Resource
                     ->relationship('group', 'group')
                     ->searchable()
                     ->preload()
-                    ->multiple(),
-                Tables\Filters\TrashedFilter::make(),
+                    ->multiple()
+                    ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
+                Tables\Filters\TrashedFilter::make()->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
+                Tables\Actions\DeleteAction::make()->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
                 Tables\Actions\Action::make('print')
                     ->label('Print')
                     ->icon('heroicon-o-printer')
                     ->url(fn ($record) => static::getUrl('print', ['record' => $record]))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
+                    
             ])
             ->bulkActions([
                 // Tables\Actions\DeleteBulkAction::make(),

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\KreditHarian;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 use Filament\Widgets\ChartWidget;
 
 class PinjamanHarianChart extends ChartWidget
@@ -17,6 +18,11 @@ class PinjamanHarianChart extends ChartWidget
     ];
 
     protected static ?int $sort = 2;
+
+    public static function canView(): bool
+    {
+        return Filament::auth()->user()?->hasRole('super_admin') ?? false;
+    }
 
 
     protected function getHeight(): string

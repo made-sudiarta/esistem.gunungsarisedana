@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\Widget;
 use App\Models\SimpananBerjangka;
+use Filament\Facades\Filament;
 use Carbon\Carbon;
 
 class JatuhTempoHariIni extends Widget
@@ -18,6 +19,10 @@ class JatuhTempoHariIni extends Widget
     protected static ?int $sort = 3;
     public $size = 'medium';
 
+    public static function canView(): bool
+    {
+        return Filament::auth()->user()?->hasRole('super_admin') ?? false;
+    }
     // deklarasi public property agar tersedia di blade
     public $records;
     public int $total = 0;

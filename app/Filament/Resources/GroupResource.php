@@ -27,6 +27,7 @@ class GroupResource extends Resource
     protected static ?string $pluralModelLabel = 'Kolektor';
     protected static ?string $title = 'Kolektor';
 
+    
     public static function form(Form $form): Form
     {
         return $form

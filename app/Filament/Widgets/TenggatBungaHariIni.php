@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\Widget;
 use App\Models\SimpananBerjangka;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 class TenggatBungaHariIni extends Widget
 {
@@ -17,7 +18,10 @@ class TenggatBungaHariIni extends Widget
         'xl' => 12,
     ];
     protected static ?int $sort = 4; 
-
+    public static function canView(): bool
+    {
+        return Filament::auth()->user()?->hasRole('super_admin') ?? false;
+    }
 
     public $records;
     public $total;
