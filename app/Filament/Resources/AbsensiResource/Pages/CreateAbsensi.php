@@ -40,11 +40,21 @@ class CreateAbsensi extends CreateRecord
         }
     }
 
+    // protected function mutateFormDataBeforeCreate(array $data): array
+    // {
+    //     $data['user_id'] = auth()->id();
+    //     return $data;
+    // }
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['user_id'] = auth()->id();
+        // HANYA user non super_admin yang dipaksa pakai dirinya sendiri
+        if (! auth()->user()->hasRole('super_admin')) {
+            $data['user_id'] = auth()->id();
+        }
+
         return $data;
     }
+
 
     protected function getRedirectUrl(): string
     {

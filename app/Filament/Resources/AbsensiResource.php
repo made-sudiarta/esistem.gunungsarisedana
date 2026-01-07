@@ -32,19 +32,60 @@ class AbsensiResource extends Resource
     protected static ?string $pluralModelLabel = 'Absensi Karyawan';
     protected static ?string $title = 'Absensi Karyawan';
 
+    // protected static function mutateFormDataBeforeCreate(array $data): array
+    // {
+    //     if (! auth()->user()->hasRole('super_admin')) {
+    //         $data['user_id'] = auth()->id();
+    //     }
+
+    //     return $data;
+    // }
     protected static function mutateFormDataBeforeCreate(array $data): array
     {
+        // HANYA user biasa yang dipaksa pakai user sendiri
         if (! auth()->user()->hasRole('super_admin')) {
             $data['user_id'] = auth()->id();
         }
 
         return $data;
     }
+
+    // protected static function mutateFormDataBeforeSave(array $data): array
+    // {
+    //     // proteksi user_id
+    //     if (! auth()->user()->hasRole('super_admin')) {
+    //         unset($data['user_id'], $data['penarikan']);
+    //     }
+
+    //     // validasi penarikan
+    //     if (
+    //         isset($data['penarikan'], $data['jumlah_setoran']) &&
+    //         $data['penarikan'] > $data['jumlah_setoran']
+    //     ) {
+    //         throw new \Exception('Penarikan tidak boleh melebihi jumlah setoran');
+    //     }
+
+    //     // hitung jumlah jam (kode Anda tetap di sini)
+    //     if (! empty($data['jam_masuk']) && ! empty($data['jam_keluar'])) {
+    //         $masuk  = Carbon::parse($data['jam_masuk']);
+    //         $keluar = Carbon::parse($data['jam_keluar']);
+
+    //         if ($keluar->greaterThan($masuk)) {
+    //             $data['jumlah_jam'] = round(
+    //                 $keluar->diffInMinutes($masuk) / 60,
+    //                 2
+    //             );
+    //         }
+    //     }
+
+    //     return $data;
+    // }
+
     protected static function mutateFormDataBeforeSave(array $data): array
     {
-        // proteksi user_id
+        // user biasa TIDAK BOLEH mengubah user_id saat edit
         if (! auth()->user()->hasRole('super_admin')) {
-            unset($data['user_id'], $data['penarikan']);
+            unset($data['user_id']);
         }
 
         // validasi penarikan
@@ -55,7 +96,7 @@ class AbsensiResource extends Resource
             throw new \Exception('Penarikan tidak boleh melebihi jumlah setoran');
         }
 
-        // hitung jumlah jam (kode Anda tetap di sini)
+        // hitung jumlah jam
         if (! empty($data['jam_masuk']) && ! empty($data['jam_keluar'])) {
             $masuk  = Carbon::parse($data['jam_masuk']);
             $keluar = Carbon::parse($data['jam_keluar']);
@@ -72,6 +113,7 @@ class AbsensiResource extends Resource
     }
 
 
+
     public static function form(Form $form): Form
     {
         return $form
@@ -81,17 +123,26 @@ class AbsensiResource extends Resource
                 Forms\Components\Section::make('Data Karyawan')
                     ->icon('heroicon-o-user')
                     ->schema([
+                        // Forms\Components\Select::make('user_id')
+                        //     ->label('Karyawan')
+                        //     ->relationship('user', 'name')
+                        //     ->searchable()
+                        //     ->preload()
+                        //     ->required()
+                        //     // Hanya super admin bisa pilih
+                        //     ->visible(fn () => auth()->user()->hasRole('super_admin'))
+                        //     // Default untuk user biasa
+                        //     ->default(fn () => auth()->id())
+                        //     ->dehydrated(true),
                         Forms\Components\Select::make('user_id')
                             ->label('Karyawan')
                             ->relationship('user', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
-                            // Hanya super admin bisa pilih
                             ->visible(fn () => auth()->user()->hasRole('super_admin'))
-                            // Default untuk user biasa
-                            ->default(fn () => auth()->id())
                             ->dehydrated(true),
+
 
                         // Tampilkan read-only nama user untuk user biasa
                         Forms\Components\Placeholder::make('user_name')
