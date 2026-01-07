@@ -70,7 +70,7 @@
         .col-group { width: 7%; }
         .col-tgl { width: 12%; }
         .col-uang { width: 13%; }
-        .col-status { width: 6%; }
+        .col-status { width: 10%; }
 
         /* ===== TTD ===== */
         .ttd-wrapper {

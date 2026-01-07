@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class KreditHarian extends Model
 {
@@ -49,7 +50,16 @@ class KreditHarian extends Model
     }
     public function getStatusAttribute(): string
     {
-        return $this->sisa_pokok <= 0 ? 'lunas' : 'aktif';
+        if ($this->sisa_pokok <= 0) {
+            return 'lunas';
+        }
+
+        $jatuhTempo = Carbon::parse($this->tanggal_pengajuan)
+            ->addDays($this->jangka_waktu);
+
+        return $jatuhTempo->isPast()
+            ? 'jatuh tempo'
+            : 'aktif';
     }
 
     public function getSisaPokokAttribute(): float
@@ -64,6 +74,5 @@ class KreditHarian extends Model
 
         return max($totalKredit - $totalBayar, 0);
     }
-
 
 }
