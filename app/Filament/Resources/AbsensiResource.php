@@ -235,6 +235,7 @@ class AbsensiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('tanggal', 'desc') 
             ->columns([
                 
                 Tables\Columns\TextColumn::make('tanggal')
@@ -265,6 +266,7 @@ class AbsensiResource extends Resource
                 
 
             ])
+            
             ->modifyQueryUsing(function ($query) {
                 if (! auth()->user()->hasRole('super_admin')) {
                     $query->where('user_id', auth()->id());
