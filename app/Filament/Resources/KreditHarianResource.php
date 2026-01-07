@@ -36,7 +36,23 @@ class KreditHarianResource extends Resource
     protected static ?string $title = 'Pinjaman Harian';
 
 
-    
+    private static function rowColor($record): ?string
+    {
+        // 1️⃣ Lunas → hijau
+        if ($record->status === 'lunas') {
+            return 'success';
+        }
+
+        // 2️⃣ Lewat jatuh tempo → warning
+        $jatuhTempo = Carbon::parse($record->tanggal_pengajuan)
+            ->addDays($record->jangka_waktu);
+
+        if (now()->greaterThan($jatuhTempo)) {
+            return 'warning';
+        }
+
+        return null;
+    }
     public static function getRelations(): array
     {
         return [
@@ -115,21 +131,6 @@ class KreditHarianResource extends Resource
                     ->required()
                     ->columnSpan(1),
 
-                // DatePicker::make('tanggal_jatuhtempo')
-                //     ->label('Tanggal Jatuh Tempo')
-                //     ->required()
-                //     ->default(function ($get) {
-                //         // Hitung hanya saat create
-                //         $tanggalPengajuan = $get('tanggal_pengajuan') ?? now();
-                //         $jangkaWaktu = $get('jangka_waktu') ?? 0;
-
-                //         return now()->parse($tanggalPengajuan)->addDays($jangkaWaktu);
-                //     })
-                //     ->disabled() // user tidak bisa edit manual
-                //     ->columnSpan(1),
-
-                
-
                 TextInput::make('plafond')
                     ->label('Plafond')
                     ->numeric()
@@ -181,26 +182,25 @@ class KreditHarianResource extends Resource
         return $table
             ->defaultSort('no_pokok', 'desc')
             ->columns([
-                TextColumn::make('no')->label('No.')->rowIndex(),
+                TextColumn::make('no')->label('No.')->rowIndex()
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('member.nia')->label('NIA')->searchable()
                     ->sortable()
                     ->getStateUsing(function ($record) {
-                        // Ambil nomor urut dari database, misal "1"
                         $nia = str_pad($record->member->nia, 5, '0', STR_PAD_LEFT);
                         $jenis = $record->member->jenis->keterangan;
                         return "$nia/$jenis";
-                    }),
-                // TextColumn::make('no_pokok')->label('No Pokok'),
+                    })
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('no_pokok')
                     ->label('No Pokok')
                     ->getStateUsing(function ($record) {
-                        // Ambil nomor urut dari database, misal "1"
                         $nomor = str_pad($record->no_pokok, 5, '0', STR_PAD_LEFT);
 
-                        // KGSH fixed
                         $kode = 'KGSH';
 
-                        // Bulan romawi dari tanggal_pengajuan
                         $bulan = Carbon::parse($record->tanggal_pengajuan)->format('m');
                         $romawi = [
                             '01' => 'I', '02' => 'II', '03' => 'III', '04' => 'IV',
@@ -208,39 +208,77 @@ class KreditHarianResource extends Resource
                             '09' => 'IX', '10' => 'X', '11' => 'XI', '12' => 'XII',
                         ][$bulan];
 
-                        // Tahun dari tanggal_pengajuan
                         $tahun = Carbon::parse($record->tanggal_pengajuan)->format('Y');
 
                         return "$nomor/$kode/$romawi/$tahun";
-                    }),
-                TextColumn::make('group.group')->label('Group'),
+                    })
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                TextColumn::make('group.group')->label('Group')
+                    ->color(fn ($record) => static::rowColor($record))  
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('nama_lengkap')->label('Nama Lengkap')->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('sisa_pokok')
                     ->label('Sisa Pokok')
-                    ->money('idr', true),
-
-
-                TextColumn::make('bunga_persen')->suffix('%'),
-                TextColumn::make('admin_persen')->suffix('%'),
-                TextColumn::make('tanggal_pengajuan')->date(),
+                    ->money('idr', true)
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                TextColumn::make('bunga_persen')->suffix('%')
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                TextColumn::make('admin_persen')->suffix('%')
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                TextColumn::make('tanggal_pengajuan')->date()
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('jatuh_tempo')
                     ->label('Tanggal Jatuh Tempo')
                     ->getStateUsing(function ($record) {
                         return \Carbon\Carbon::parse($record->tanggal_pengajuan)
                             ->addDays($record->jangka_waktu)
                             ->format('M d, Y');
-                    }),
+                    })
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
-                TextColumn::make('cicilan_harian')->label('Cicilan/Hari')->money('idr', true),
+                TextColumn::make('cicilan_harian')->label('Cicilan/Hari')
+                    ->money('idr', true)
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state) => $state === 'lunas' ? 'success' : 'warning'),
+                    ->getStateUsing(function ($record) {
+                        if ($record->status === 'lunas') {
+                            return 'lunas';
+                        }
+
+                        $jatuhTempo = \Carbon\Carbon::parse($record->tanggal_pengajuan)
+                            ->addDays($record->jangka_waktu);
+
+                        if (now()->greaterThan($jatuhTempo)) {
+                            return 'jatuh tempo';
+                        }
+
+                        return $record->status;
+                    })
+                    ->color(function (string $state) {
+                        return match ($state) {
+                            'lunas' => 'success',
+                            'jatuh tempo' => 'warning',
+                            default => 'gray',
+                        };
+                    })
+                    ->weight('medium'),
+
+
 
             ])
             ->filters([
-                // bisa ditambah filter Member/Group/Tanggal
                 Tables\Filters\SelectFilter::make('group_id')
                     ->label('Group Kolektor')
                     ->relationship('group', 'group')
@@ -272,7 +310,6 @@ class KreditHarianResource extends Resource
                     
             ])
             ->bulkActions([
-                // Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
