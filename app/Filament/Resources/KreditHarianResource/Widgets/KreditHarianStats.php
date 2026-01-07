@@ -58,7 +58,7 @@ class KreditHarianStats extends BaseWidget
         $today = Carbon::today();
 
         // 🔥 BASE QUERY (FILTER GROUP USER)
-        $query = KreditHarian::query();
+        $query = KreditHarian::query()->where('sisa_pokok', '>', 0);
 
         // Super Admin → semua data
         if (! $user->hasRole('super_admin')) {
@@ -70,7 +70,8 @@ class KreditHarianStats extends BaseWidget
         // CLONE query agar tidak bentrok
         $totalPinjaman = (clone $query)->count();
         $totalSisaPokok = (clone $query)->sum('sisa_pokok');
-
+        $sisaPokokTahunini = (clone $query)->whereYear('tanggal_pengajuan', now())->sum('sisa_pokok');
+        $totalPengajuanTahunini = (clone $query)->whereYear('tanggal_pengajuan', now())->sum('plafond');
         $jatuhTempoQuery = (clone $query)->whereRaw(
             "DATE_ADD(tanggal_pengajuan, INTERVAL jangka_waktu DAY) < ?",
             [$today]
@@ -82,6 +83,8 @@ class KreditHarianStats extends BaseWidget
                 ->icon('heroicon-o-banknotes')
                 ->color('primary'),
 
+            
+
             Stat::make(
                 'Total Sisa Pokok',
                 'Rp ' . number_format($totalSisaPokok, 0, ',', '.')
@@ -90,8 +93,10 @@ class KreditHarianStats extends BaseWidget
                 ->icon('heroicon-o-currency-dollar')
                 ->color('success'),
 
+            
+                
             Stat::make('Pinjaman Jatuh Tempo', $jatuhTempoQuery->count())
-                ->description('Lewat jatuh tempo')
+                ->description('Jumlah Pinjaman Jatuh Tempo')
                 ->icon('heroicon-o-exclamation-triangle')
                 ->color('danger'),
 
