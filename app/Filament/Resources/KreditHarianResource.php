@@ -179,6 +179,7 @@ class KreditHarianResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('no_pokok', 'desc')
             ->columns([
                 TextColumn::make('no')->label('No.')->rowIndex(),
                 TextColumn::make('member.nia')->label('NIA')->searchable()
