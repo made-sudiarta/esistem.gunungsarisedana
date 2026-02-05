@@ -2,85 +2,72 @@
 
 namespace App\Filament\Widgets;
 
-use Filament\Widgets\Widget;
 use App\Models\Absensi;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Widgets\Widget;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Support\Contracts\TranslatableContentDriver;
 
-class AbsenMasukWidget extends Widget
+
+class AbsenMasukWidget extends Widget implements HasActions
 {
+    use InteractsWithActions;
+
     protected static string $view = 'filament.widgets.absen-masuk-widget';
-    
-    protected int | string | array $columnSpan = 1;
-    public $size = 'medium';
-    
+
     protected static ?int $sort = 2;
-    public $todayStatus;
-    public $showKeluarModal = false;
-    public $jumlah_setoran = 0;
-    public $penarikan = 0;
+    public string $todayStatus;
+    public bool $showKeluarModal = false;
+    public int $jumlah_setoran = 0;
+    public int $penarikan = 0;
+
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'lg' => 6,
+    ];
+    public function makeFilamentTranslatableContentDriver(): ?TranslatableContentDriver
+    {
+        return null;
+    }
+
 
     public function mount(): void
     {
         $this->updateStatus();
     }
 
+    /* ================= STATUS ================= */
+
     public function updateStatus(): void
     {
-        $today = now()->format('Y-m-d');
         $absensi = Absensi::where('user_id', Auth::id())
-            ->where('tanggal', $today)
+            ->whereDate('tanggal', today())
             ->first();
 
-        if (!$absensi) {
+        if (! $absensi) {
             $this->todayStatus = 'not_absen';
-        } elseif (!$absensi->jam_keluar) {
+        } elseif (! $absensi->jam_keluar) {
             $this->todayStatus = 'masuk_done';
         } else {
             $this->todayStatus = 'completed';
         }
     }
 
-    // public function absenMasuk(): void
-    // {
-    //     $today = now()->format('Y-m-d');
+    /* ================= ABSEN MASUK ================= */
 
-    //     $exists = Absensi::where('user_id', Auth::id())
-    //         ->where('tanggal', $today)
-    //         ->first();
-
-    //     if ($exists) {
-    //         Notification::make()
-    //             ->title('Kamu sudah absen hari ini!')
-    //             ->warning()
-    //             ->send();
-    //         return;
-    //     }
-
-    //     Absensi::create([
-    //         'user_id' => Auth::id(),
-    //         'tanggal' => $today,
-    //         'jam_masuk' => now()->format('H:i'),
-    //     ]);
-
-    //     $this->updateStatus();
-
-    //     Notification::make()
-    //         ->title('Absen Masuk berhasil tercatat!')
-    //         ->success()
-    //         ->send();
-    // }
     public function absenMasuk(): void
     {
-        $today = now()->format('Y-m-d');
-
-        $exists = Absensi::where('user_id', Auth::id())
-            ->where('tanggal', $today)
-            ->first();
-
-        if ($exists) {
+        if (
+            Absensi::where('user_id', Auth::id())
+                ->whereDate('tanggal', today())
+                ->exists()
+        ) {
             Notification::make()
                 ->title('Kamu sudah absen hari ini!')
                 ->warning()
@@ -90,83 +77,62 @@ class AbsenMasukWidget extends Widget
 
         $now = now();
 
-        // JAM MASUK DITENTUKAN
-        $jamMasuk = $now->lt(Carbon::createFromTime(8, 0))
-            ? Carbon::createFromTime(8, 0)
+        $jamMasuk = $now->lt(today()->setTime(8, 0))
+            ? today()->setTime(8, 0)
             : $now;
 
         Absensi::create([
             'user_id'   => Auth::id(),
-            'tanggal'   => $today,
+            'tanggal'   => today(),
             'jam_masuk' => $jamMasuk->format('H:i'),
         ]);
 
         $this->updateStatus();
 
         Notification::make()
-            ->title('Absen Masuk berhasil tercatat!')
+            ->title('Absen Masuk berhasil!')
             ->success()
             ->send();
     }
 
+    /* ================= MODAL ABSEN KELUAR ================= */
 
-    // public function absenKeluar(): void
-    // {
-    //     if ($this->jumlah_setoran < 0 || $this->penarikan < 0) {
-    //         Notification::make()
-    //             ->title('Setoran dan Penarikan harus >= 0')
-    //             ->danger()
-    //             ->send();
-    //         return;
-    //     }
-
-    //     $today = now()->format('Y-m-d');
-    //     $absensi = Absensi::where('user_id', Auth::id())
-    //         ->where('tanggal', $today)
-    //         ->first();
-
-    //     if (!$absensi || $absensi->jam_keluar) {
-    //         Notification::make()
-    //             ->title('Tidak ada absen masuk atau sudah keluar!')
-    //             ->warning()
-    //             ->send();
-    //         return;
-    //     }
-
-    //     $jam_masuk = Carbon::parse($absensi->jam_masuk);
-    //     $jam_keluar = now();
-
-    //     $absensi->update([
-    //         'jam_keluar' => $jam_keluar->format('H:i'),
-    //         'jumlah_jam' => round($jam_keluar->diffInMinutes($jam_masuk) / 60, 2),
-    //         'jumlah_setoran' => $this->jumlah_setoran,
-    //         'penarikan' => $this->penarikan,
-    //     ]);
-
-    //     $this->showKeluarModal = false;
-    //     $this->jumlah_setoran = 0;
-    //     $this->penarikan = 0;
-
-    //     $this->updateStatus();
-
-    //     Notification::make()
-    //         ->title('Absen Keluar berhasil!')
-    //         ->success()
-    //         ->send();
-    // }
-    public function absenKeluar(): void
+    protected function getActions(): array
     {
-        if ($this->jumlah_setoran < 0 || $this->penarikan < 0) {
-            Notification::make()
-                ->title('Setoran dan Penarikan harus >= 0')
-                ->danger()
-                ->send();
-            return;
-        }
+        return [
+            Action::make('absenKeluar')
+                ->label('ABSEN PULANG KERJA')
+                ->color('danger')
+                ->modalHeading('Formulir Absensi Keluar')
+                ->modalDescription('Masukkan setoran dan penarikan hari ini')
+                ->form([
+                    \Filament\Forms\Components\TextInput::make('jumlah_setoran')
+                        ->label('Setoran Hari Ini')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->required(),
 
-        $today = now()->format('Y-m-d');
+                    \Filament\Forms\Components\TextInput::make('penarikan')
+                        ->label('Penarikan Hari Ini')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    $this->jumlah_setoran = $data['jumlah_setoran'];
+                    $this->penarikan = $data['penarikan'];
+
+                    $this->absenKeluar();
+                })
+                ->visible(fn () => $this->todayStatus === 'masuk_done'),
+        ];
+    }
+
+
+    private function handleAbsenKeluar(array $data): void
+    {
         $absensi = Absensi::where('user_id', Auth::id())
-            ->where('tanggal', $today)
+            ->whereDate('tanggal', today())
             ->first();
 
         if (! $absensi || $absensi->jam_keluar) {
@@ -177,26 +143,19 @@ class AbsenMasukWidget extends Widget
             return;
         }
 
-        $now = now();
-        $jamBatasPulang = Carbon::createFromTime(16, 0);
-
-        // JAM KELUAR DITENTUKAN
-        $jamKeluar = $now->gt($jamBatasPulang)
-            ? $jamBatasPulang
-            : $now;
-
         $jamMasuk = Carbon::parse($absensi->jam_masuk);
+        $jamBatas = today()->setTime(16, 0);
+
+        $jamKeluar = now()->greaterThan($jamBatas)
+            ? $jamBatas
+            : now();
 
         $absensi->update([
-            'jam_keluar'      => $jamKeluar->format('H:i'),
-            'jumlah_jam'      => round($jamKeluar->diffInMinutes($jamMasuk) / 60, 2),
-            'jumlah_setoran'  => $this->jumlah_setoran,
-            'penarikan'       => $this->penarikan,
+            'jam_keluar'     => $jamKeluar->format('H:i'),
+            'jumlah_jam'     => round($jamKeluar->diffInMinutes($jamMasuk) / 60, 2),
+            'jumlah_setoran' => $data['jumlah_setoran'],
+            'penarikan'      => $data['penarikan'],
         ]);
-
-        $this->showKeluarModal = false;
-        $this->jumlah_setoran = 0;
-        $this->penarikan = 0;
 
         $this->updateStatus();
 
@@ -205,7 +164,6 @@ class AbsenMasukWidget extends Widget
             ->success()
             ->send();
     }
-
 
     public function render(): View
     {

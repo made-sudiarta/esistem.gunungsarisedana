@@ -8,8 +8,11 @@ class TanggalJamWidget extends Widget
 {
     protected static string $view = 'filament.widgets.tanggal-jam-widget';
     
-    protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 11;
+    protected static ?int $sort = 1; 
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'lg' => 6,
+     ];
 
     public function getTimeProperty(): string
     {
