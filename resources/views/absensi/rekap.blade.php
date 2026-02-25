@@ -11,12 +11,17 @@
         th, td { border:1px solid #333; padding:6px; }
         th { background:#f2f2f2; }
         .right { text-align:right; }
+
+        /* ini kunci: page break tiap karyawan */
+        .page-break { page-break-after: always; }
     </style>
 </head>
 <body>
+
+@foreach($rekap as $i => $r)
     <h2>Rekap Absensi Karyawan</h2>
     <div class="meta">
-        <div><b>Nama:</b> {{ $userName }}</div>
+        <div><b>Nama:</b> {{ $r['userName'] }}</div>
         <div><b>Periode:</b> {{ $mulai->format('d-m-Y') }} s/d {{ $selesai->format('d-m-Y') }}</div>
     </div>
 
@@ -24,19 +29,19 @@
     <table style="margin-bottom: 16px;">
         <tr>
             <th>Total Jam Kerja</th>
-            <td class="right">{{ number_format($totalJam, 2) }} jam</td>
+            <td class="right">{{ number_format($r['totalJam'], 2) }} jam</td>
         </tr>
         <tr>
             <th>Total Setoran</th>
-            <td class="right">Rp {{ number_format($totalSetoran, 0, ',', '.') }}</td>
+            <td class="right">Rp {{ number_format($r['totalSetoran'], 0, ',', '.') }}</td>
         </tr>
         <tr>
             <th>Total Penarikan</th>
-            <td class="right">Rp {{ number_format($totalPenarikan, 0, ',', '.') }}</td>
+            <td class="right">Rp {{ number_format($r['totalPenarikan'], 0, ',', '.') }}</td>
         </tr>
         <tr>
             <th>Total Bersih (Setoran - Penarikan)</th>
-            <td class="right"><b>Rp {{ number_format($totalBersih, 0, ',', '.') }}</b></td>
+            <td class="right"><b>Rp {{ number_format($r['totalBersih'], 0, ',', '.') }}</b></td>
         </tr>
     </table>
 
@@ -53,14 +58,14 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($rows as $r)
+            @forelse($r['rows'] as $row)
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d-m-Y') }}</td>
-                    <td>{{ $r->jam_masuk }}</td>
-                    <td>{{ $r->jam_keluar }}</td>
-                    <td class="right">{{ number_format((float)$r->jumlah_jam, 2) }}</td>
-                    <td class="right">Rp {{ number_format((float)$r->jumlah_setoran, 0, ',', '.') }}</td>
-                    <td class="right">Rp {{ number_format((float)$r->penarikan, 0, ',', '.') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y') }}</td>
+                    <td>{{ $row->jam_masuk }}</td>
+                    <td>{{ $row->jam_keluar }}</td>
+                    <td class="right">{{ number_format((float)$row->jumlah_jam, 2) }}</td>
+                    <td class="right">Rp {{ number_format((float)$row->jumlah_setoran, 0, ',', '.') }}</td>
+                    <td class="right">Rp {{ number_format((float)$row->penarikan, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
@@ -69,5 +74,12 @@
             @endforelse
         </tbody>
     </table>
+
+    {{-- Jangan page break setelah karyawan terakhir --}}
+    @if($i < count($rekap) - 1)
+        <div class="page-break"></div>
+    @endif
+@endforeach
+
 </body>
 </html>
