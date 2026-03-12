@@ -22,8 +22,10 @@ class KreditHarianTransaksiResource extends Resource
 {
     protected static ?string $model = KreditHarianTransaksi::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Transaksi';
+    // protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static ?string $navigationLabel = 'Transaksi Pinj. Harian';
     protected static ?string $navigationGroup = 'Pinjaman';
 
     protected static ?string $modelLabel = 'Transaksi Pinjaman Harian';
