@@ -6,6 +6,7 @@ use App\Models\KreditHarian;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Facades\Filament;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KreditHarianPrintController extends Controller
 {
@@ -41,5 +42,18 @@ class KreditHarianPrintController extends Controller
             });
 
         return view('prints.kredit-harian.index', compact('data'));
+    }
+    public function akad(KreditHarian $record)
+    {
+        $record->load([
+            'member',
+            'group.employees.members',
+        ]);
+
+        $pdf = Pdf::loadView('pdf.kredit-harian-akad', [
+            'record' => $record,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('akad-kredit-' . $record->id . '.pdf');
     }
 }

@@ -18,6 +18,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Facades\Filament;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 
 
@@ -307,6 +309,12 @@ class KreditHarianResource extends Resource
                     ->visible(fn () =>
                     Filament::auth()->user()?->hasRole('super_admin')
                 ),
+                Tables\Actions\Action::make('akad')
+                    ->label('Akad')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn ($record) => route('kredit-harian.akad-pdf', ['record' => $record]))
+                    ->openUrlInNewTab(),
                     
             ])
             ->bulkActions([
@@ -321,6 +329,7 @@ class KreditHarianResource extends Resource
             'view' => Pages\ViewKreditHarian::route('/{record}'),
             'edit' => Pages\EditKreditHarian::route('/{record}/edit'),
             'print' => Pages\PrintKreditHarian::route('/{record}/print'),
+            'akad' => Pages\AkadKredit::route('/{record}/akad'),
         ];
     }
     public static function canEdit(Model $record): bool

@@ -56,3 +56,5 @@ Route::get(
     '/admin/kredit-harian/print',
     [KreditHarianPrintController::class, 'index']
 )->name('kredit-harian.print.index');
+Route::get('/kredit-harian/{record}/akad-pdf', [KreditHarianPrintController::class, 'akad'])
+    ->name('kredit-harian.akad-pdf');
