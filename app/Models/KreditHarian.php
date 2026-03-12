@@ -23,7 +23,26 @@ class KreditHarian extends Model
         'plafond',
         'bunga_persen',
         'admin_persen',
-        'sisa_pokok'
+        'sisa_pokok',
+        'jaminan',
+        'prov_adm',
+        'materai',
+        'op',
+        'kyd',
+        'biaya_lain',
+        'keterangan_biaya_lain',
+    ];
+    protected $casts = [
+        'tanggal_pengajuan' => 'date',
+        'plafond' => 'decimal:2',
+        'bunga_persen' => 'decimal:2',
+        'admin_persen' => 'decimal:2',
+        'sisa_pokok' => 'decimal:2',
+        'prov_adm' => 'decimal:2',
+        'materai' => 'decimal:2',
+        'op' => 'decimal:2',
+        'kyd' => 'decimal:2',
+        'biaya_lain' => 'decimal:2',
     ];
 
     public function member()

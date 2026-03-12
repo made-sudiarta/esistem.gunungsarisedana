@@ -14,7 +14,7 @@ class Member extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['nia','nik','nama_lengkap','tempat_lahir','tanggal_lahir','alamat','no_hp','jenis_id','tanggal_bergabung'];
+    protected $fillable = ['nia','nik','nama_lengkap','tempat_lahir','tanggal_lahir','pekerjaan','alamat','no_hp','jenis_id','tanggal_bergabung'];
 
     public function jenis(): BelongsTo
     {

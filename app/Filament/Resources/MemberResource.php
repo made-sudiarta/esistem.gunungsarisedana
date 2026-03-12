@@ -64,6 +64,10 @@ class MemberResource extends Resource
                             Forms\Components\DatePicker::make('tanggal_lahir')
                                 ->label('Tanggal Lahir'),
 
+                            Forms\Components\TextInput::make('pekerjaan')
+                                ->label('Pekerjaan')
+                                ->maxLength(255),
+
                             Forms\Components\Textarea::make('alamat')
                                 ->label('Alamat')
                                 ->rows(3)
@@ -129,6 +133,10 @@ class MemberResource extends Resource
                             Forms\Components\DatePicker::make('tanggal_lahir')
                                 ->label('Tanggal Lahir')
                                 ->disabled(),
+
+                            Forms\Components\TextInput::make('pekerjaan')
+                                ->label('Pekerjaan')
+                                ->maxLength(255),
 
                             Forms\Components\Textarea::make('alamat')
                                 ->label('Alamat')

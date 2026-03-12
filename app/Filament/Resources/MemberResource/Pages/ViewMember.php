@@ -111,6 +111,10 @@ class ViewMember extends ViewRecord implements HasForms
                             Forms\Components\DatePicker::make('tanggal_lahir')
                                 ->label('Tanggal Lahir')
                                 ->disabled(),
+                            
+                           Forms\Components\TextInput::make('pekerjaan')
+                                ->label('Pekerjaan')
+                                ->maxLength(255),
 
                             Forms\Components\Textarea::make('alamat')
                                 ->label('Alamat')

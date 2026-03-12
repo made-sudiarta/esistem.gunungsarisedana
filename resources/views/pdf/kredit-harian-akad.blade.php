@@ -10,8 +10,8 @@
         }
 
         body {
-            font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
+            font-family: "Calibri";
+            font-size: 11pt;
             line-height: 1.15;
             color: #111;
             margin: 0;
@@ -147,13 +147,13 @@
             <tr><td class="label">Alamat</td><td class="sep">:</td><td>{{ $alamat }}</td></tr>
             <tr><td class="label">No. Pokok Kredit</td><td class="sep">:</td><td>{{ $nomorAkad }}</td></tr>
             <tr><td class="label">Besar Pinjaman</td><td class="sep">:</td><td>Rp. {{ number_format($jumlahPinjaman, 0, ',', '.') }}</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Provisi &amp; Adm</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Materai</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya OP</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya KYD</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Lain-lain</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr><td class="label">Jumlah Biaya-biaya</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr><td class="label"><strong>Jumlah Diterima Bersih</strong></td><td class="sep"><strong>:</strong></td><td><strong>Rp. _____________________________</strong></td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Provisi &amp; Adm</td><td class="sep">:</td><td>Rp. {{ number_format($record->prov_adm, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Materai</td><td class="sep">:</td><td>Rp. {{ number_format($record->materai, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya OP</td><td class="sep">:</td><td>Rp. {{ number_format($record->op, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya KYD</td><td class="sep">:</td><td>Rp. {{ number_format($record->kyd, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Lain-lain</td><td class="sep">:</td><td>Rp. {{ number_format($record->biaya_lain, 0, ',', '.') }}</td></tr>
+            <tr><td class="label">Jumlah Biaya-biaya</td><td class="sep">:</td><td>Rp. {{ number_format($record->prov_adm+$record->materai+$record->op+$record->kyd+$record->biaya_lain, 0, ',', '.') }}</td></tr>
+            <tr><td class="label"><strong>Jumlah Diterima Bersih</strong></td><td class="sep"><strong>:</strong></td><td><strong>Rp. {{ number_format($jumlahPinjaman-($record->prov_adm+$record->materai+$record->op+$record->kyd+$record->biaya_lain), 0, ',', '.') }}</strong></td></tr>
         </table>
 
         <div class="signature-wrap">
@@ -174,7 +174,8 @@
         </div>
 
         <br>
-        <div class="divider"></div>
+        <!-- <div class="hr"></div> -->
+         <hr style="border:0; border-top:1px dashed #000;">
         <br>
 
         <div class="header">
@@ -191,13 +192,13 @@
             <tr><td class="label">Alamat</td><td class="sep">:</td><td>{{ $alamat }}</td></tr>
             <tr><td class="label">No. Pokok Kredit</td><td class="sep">:</td><td>{{ $nomorAkad }}</td></tr>
             <tr><td class="label">Besar Pinjaman</td><td class="sep">:</td><td>Rp. {{ number_format($jumlahPinjaman, 0, ',', '.') }}</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Provisi &amp; Adm</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Materai</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya OP</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya KYD</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Lain-lain</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr><td class="label">Jumlah Biaya-biaya</td><td class="sep">:</td><td>Rp. _____________________________</td></tr>
-            <tr><td class="label"><strong>Jumlah Diterima Bersih</strong></td><td class="sep"><strong>:</strong></td><td><strong>Rp. _____________________________</strong></td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Provisi &amp; Adm</td><td class="sep">:</td><td>Rp. {{ number_format($record->prov_adm, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Materai</td><td class="sep">:</td><td>Rp. {{ number_format($record->materai, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya OP</td><td class="sep">:</td><td>Rp. {{ number_format($record->op, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya KYD</td><td class="sep">:</td><td>Rp. {{ number_format($record->kyd, 0, ',', '.') }}</td></tr>
+            <tr style="font-size:10pt"><td class="label">&nbsp;&nbsp;&nbsp;&nbsp;Biaya Lain-lain</td><td class="sep">:</td><td>Rp. {{ number_format($record->biaya_lain, 0, ',', '.') }}</td></tr>
+            <tr><td class="label">Jumlah Biaya-biaya</td><td class="sep">:</td><td>Rp. {{ number_format($record->prov_adm+$record->materai+$record->op+$record->kyd+$record->biaya_lain, 0, ',', '.') }}</td></tr>
+            <tr><td class="label"><strong>Jumlah Diterima Bersih</strong></td><td class="sep"><strong>:</strong></td><td><strong>Rp. {{ number_format($jumlahPinjaman-($record->prov_adm+$record->materai+$record->op+$record->kyd+$record->biaya_lain), 0, ',', '.') }}</strong></td></tr>
         </table>
     </div>
 
@@ -302,7 +303,8 @@
             untuk selanjutnya disebut sebagai <strong>Pihak Kedua / Penerima Kredit</strong>.
         </div>
 
-        <div class="divider"></div>
+        <!-- <div class="divider"></div> -->
+         <hr style="border:0; margin-top:40px; margin-bottom: 40px; border-top:1px solid #000;">
 
         <div class="pasal">
             <div class="pasal-title">Pasal 1</div>
@@ -349,7 +351,7 @@
                         Guna lebih menjamin pembayaran kredit tersebut oleh penerima kredit, diserahkan kepada Koperasi barang-barang jaminan sebagai berikut:
                         <table class="identity-table">
                             <tr><td class="sep">a.</td><td class="label">Sebuah</td><td class="sep">:</td><td>{{ $jaminan }}</td></tr>
-                            <tr><td class="sep">b.</td><td class="label">Sebuah</td><td class="sep">:</td><td>{{ $jaminan }}</td></tr>
+                            <tr><td class="sep">b.</td><td class="label">Sebuah</td><td class="sep">:</td><td>-</td></tr>
                         </table>
                     </td>
                 </tr>

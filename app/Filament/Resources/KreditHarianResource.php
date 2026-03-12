@@ -151,6 +151,43 @@ class KreditHarianResource extends Resource
                     ->required()
                     ->columnSpan(1),
 
+                TextInput::make('jaminan')
+                    ->label('Jaminan')
+                    ->maxLength(255),
+
+                TextInput::make('prov_adm')
+                    ->label('Provisi / Administrasi')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
+
+                TextInput::make('materai')
+                    ->label('Materai')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
+
+                TextInput::make('op')
+                    ->label('OP')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
+
+                TextInput::make('kyd')
+                    ->label('KYD')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
+
+                TextInput::make('biaya_lain')
+                    ->label('Biaya Lain')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
+
+                Textarea::make('keterangan_biaya_lain')
+                    ->label('Keterangan Biaya Lain')
+                    ->rows(2),
                 TextInput::make('sisa_pokok_preview')
                     ->label('Total Tagihan (Plafond + Bunga + Admin)')
                     ->disabled()
@@ -223,6 +260,18 @@ class KreditHarianResource extends Resource
                     ->sortable()
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                TextColumn::make('jaminan')
+                    ->label('Jaminan')
+                    ->searchable()
+                    ->limit(20),
+
+                TextColumn::make('prov_adm')
+                    ->label('Prov/Adm')
+                    ->money('IDR', locale: 'id'),
+
+                TextColumn::make('materai')
+                    ->label('Materai')
+                    ->money('IDR', locale: 'id'),
                 TextColumn::make('sisa_pokok')
                     ->label('Sisa Pokok')
                     ->money('idr', true)
