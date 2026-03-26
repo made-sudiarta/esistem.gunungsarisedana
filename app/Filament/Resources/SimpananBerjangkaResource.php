@@ -30,21 +30,6 @@ class SimpananBerjangkaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     
-    // public static function getEloquentQuery(): Builder
-    // {
-    //     $query = parent::getEloquentQuery()
-    //         ->withoutGlobalScopes([
-    //             SoftDeletingScope::class,
-    //         ]);
-
-    //     $user = Filament::auth()->user();
-    //     if ($user->hasRole('super_admin')) {
-    //         return $query;
-    //     }
-    //     return $query->whereHas('group', function (Builder $q) use ($user) {
-    //         $q->where('user_id', $user->id);
-    //     });
-    // }
     
 
     public static function form(Form $form): Form

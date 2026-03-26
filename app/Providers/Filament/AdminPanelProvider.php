@@ -85,6 +85,14 @@ class AdminPanelProvider extends PanelProvider
                     ->emptyPanelBackgroundImageOpacity('70%')
                     ->showEmptyPanelOnMobile(false)
                     // ->formPanelWidth('100%')
+            ])
+            ->navigationGroups([
+                'Absensi',
+                'Pinjaman',
+                'Keanggotaan',
+                'Simpanan Berjangka',
+                'Filament Shield',
+                'Setting',
             ]);
     }
 }
