@@ -60,21 +60,25 @@
 @php
     use Carbon\Carbon;
 
-    $ketua = "I Made Sudiarta, S.Kom";
-    $manager = "I Wayan Landuh";
+    $ketua = 'I Made Sudiarta, S.Kom';
+    $manager = 'I Wayan Landuh';
     $namaKasir = 'I Made Sudiarta, S.Kom';
-    $pengawas = "I Nyoman Supantra";
-    $kabagkredit = "I Wayan Wartawan";
-    $adminkredit = "I Putu Agus Indrawan";
-
-    $member = $record->member;
-    $pj = $record->penanggungJawab;
-    $jaminanPertama = $record->jaminans->first();
-    $atasNamaJaminanPertama = $jaminanPertama?->atasNamas?->pluck('atas_nama')?->join(', ');
+    $pengawas = 'I Nyoman Supantra';
+    $kabagkredit = 'I Wayan Wartawan';
+    $adminkredit = 'I Putu Agus Indrawan';
 
     $tanggalPengajuan = !empty($record->tanggal_pengajuan)
         ? Carbon::parse($record->tanggal_pengajuan)
         : now();
+
+    $tanggalPengajuanFormat = !empty($record->tanggal_pengajuan)
+        ? Carbon::parse($record->tanggal_pengajuan)->translatedFormat('d F Y')
+        : '-';
+
+    $tanggalCetak = now()->translatedFormat('d F Y');
+    $jumlahPinjaman = (float) ($record->plafond ?? 0);
+    $jangkaWaktu = (int) ($record->jangka_waktu ?? 0);
+    $tujuan = $record->tujuan_pinjaman ?? '-';
 
     $bulanRomawi = [
         '01' => 'I', '02' => 'II', '03' => 'III', '04' => 'IV',
@@ -88,44 +92,125 @@
         . '/'
         . $tanggalPengajuan->format('Y');
 
-    $namaPeminjam = $member?->nama_lengkap ?? '-';
-    $tempatLahir = $pj?->tempat_lahir ?? $member?->tempat_lahir ?? '-';
-
-    $tanggalLahir = !empty($pj?->tanggal_lahir)
-        ? Carbon::parse($pj->tanggal_lahir)->format('d-m-Y')
-        : (!empty($member?->tanggal_lahir)
-            ? Carbon::parse($member->tanggal_lahir)->format('d-m-Y')
-            : '-');
-
-    $pekerjaan = $pj?->pekerjaan ?? '-';
-    $nik = $pj?->nik ?? $member?->nik ?? '-';
-    $alamat = $pj?->alamat ?? $member?->alamat ?? '-';
-
-    $jumlahPinjaman = (float) ($record->plafond ?? 0);
-    $jangkaWaktu = (int) ($record->jangka_waktu ?? 0);
-    $tujuan = $record->tujuan_pinjaman ?? '-';
-    $tanggalCetak = now()->translatedFormat('d F Y');
-
-    $jaminanText = $jaminanPertama?->keterangan_jaminan ?? '-';
-    $atasNamaText = $atasNamaJaminanPertama ?: '-';
-
     if (! function_exists('terbilangBulanan')) {
-        function terbilangBulanan($angka) {
+        function terbilangBulanan($angka)
+        {
             $angka = abs((int) $angka);
-            $baca = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            $baca = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+
             if ($angka < 12) return $baca[$angka];
-            if ($angka < 20) return terbilangBulanan($angka - 10) . " Belas";
-            if ($angka < 100) return terbilangBulanan(intval($angka / 10)) . " Puluh " . terbilangBulanan($angka % 10);
-            if ($angka < 200) return "Seratus " . terbilangBulanan($angka - 100);
-            if ($angka < 1000) return terbilangBulanan(intval($angka / 100)) . " Ratus " . terbilangBulanan($angka % 100);
-            if ($angka < 2000) return "Seribu " . terbilangBulanan($angka - 1000);
-            if ($angka < 1000000) return terbilangBulanan(intval($angka / 1000)) . " Ribu " . terbilangBulanan($angka % 1000);
-            if ($angka < 1000000000) return terbilangBulanan(intval($angka / 1000000)) . " Juta " . terbilangBulanan($angka % 1000000);
+            if ($angka < 20) return terbilangBulanan($angka - 10) . ' Belas';
+            if ($angka < 100) return terbilangBulanan(intval($angka / 10)) . ' Puluh ' . terbilangBulanan($angka % 10);
+            if ($angka < 200) return 'Seratus ' . terbilangBulanan($angka - 100);
+            if ($angka < 1000) return terbilangBulanan(intval($angka / 100)) . ' Ratus ' . terbilangBulanan($angka % 100);
+            if ($angka < 2000) return 'Seribu ' . terbilangBulanan($angka - 1000);
+            if ($angka < 1000000) return terbilangBulanan(intval($angka / 1000)) . ' Ribu ' . terbilangBulanan($angka % 1000);
+            if ($angka < 1000000000) return terbilangBulanan(intval($angka / 1000000)) . ' Juta ' . terbilangBulanan($angka % 1000000);
+
             return number_format($angka, 0, ',', '.');
         }
     }
 
     $terbilangPinjaman = trim(terbilangBulanan($jumlahPinjaman)) . ' Rupiah';
+
+    $member = $record->member;
+    $namaPeminjam = $member->nama_lengkap ?? '-';
+    $tempatLahirPeminjam = $member->tempat_lahir ?? '-';
+    $tanggalLahirPeminjam = !empty($member?->tanggal_lahir)
+        ? Carbon::parse($member->tanggal_lahir)->format('d-m-Y')
+        : '-';
+    $pekerjaanPeminjam = $member->pekerjaan ?? '-';
+    $nikPeminjam = $member->nik ?? '-';
+    $alamatPeminjam = $member->alamat ?? '-';
+    $jenisMember = $member?->jenis?->keterangan ?? '-';
+
+    $pj = $record->penanggungJawab;
+    $namaPenanggungJawab = $pj?->nama ?? '-';
+    $tempatLahirPenanggung = $pj?->tempat_lahir ?? '-';
+    $tanggalLahirPenanggung = !empty($pj?->tanggal_lahir)
+        ? Carbon::parse($pj->tanggal_lahir)->format('d-m-Y')
+        : '-';
+    $pekerjaanPenanggung = $pj?->pekerjaan ?? '-';
+    $nikPenanggung = $pj?->nik ?? '-';
+    $alamatPenanggung = $pj?->alamat ?? '-';
+
+    $jaminanPertama = $record->jaminans->first();
+    $atasNamaJaminanPertama = $jaminanPertama?->atasNamas?->pluck('atas_nama')?->join(', ');
+    $jaminanText = $jaminanPertama?->keterangan_jaminan ?? '-';
+    $atasNamaText = $atasNamaJaminanPertama ?: '-';
+
+    $fidusia = $jaminanPertama?->fidusia;
+    $fidusiaMerk = $fidusia?->merk ?? '-';
+    $fidusiaType = $fidusia?->type ?? '-';
+    $fidusiaWarna = $fidusia?->warna ?? '-';
+    $fidusiaTahun = $fidusia?->tahun ?? '-';
+    $fidusiaNoRangka = $fidusia?->no_rangka ?? '-';
+    $fidusiaNoMesin = $fidusia?->no_mesin ?? '-';
+    $fidusiaNoPolisi = $fidusia?->no_polisi ?? '-';
+    $fidusiaNoBpkb = $fidusia?->no_bpkb ?? '-';
+    $fidusiaAtasNama = $fidusia?->atasnama ?? $atasNamaText;
+    $fidusiaTaksiran = (float) ($fidusia?->taksiran_harga ?? 0);
+    $fidusiaTempat = $fidusia?->tempat_penyimpanan ?? '-';
+
+    $pokokPerBulan = $jangkaWaktu > 0
+        ? ceil((($jumlahPinjaman / $jangkaWaktu) / 1000)) * 1000
+        : 0;
+
+    $bungaNominalPerBulan = ceil((($jumlahPinjaman * ((float) ($record->bunga_persen ?? 0)) / 100) / 1000)) * 1000;
+    $angsuranPerBulan = $pokokPerBulan + $bungaNominalPerBulan;
+
+    $tanggalJatuhTempoFormat = !empty($record->tanggal_jatuh_tempo)
+        ? Carbon::parse($record->tanggal_jatuh_tempo)->translatedFormat('d F Y')
+        : '-';
+
+    $bungaPersen = (float) ($record->bunga_persen ?? 0);
+    $totalPersenBiaya = (float) ($record->biaya_adm_persen ?? 0)
+        + (float) ($record->biaya_provisi_persen ?? 0)
+        + (float) ($record->biaya_op_persen ?? 0);
+
+    $jaminan1 = $record->jaminans->get(0);
+    $jaminan2 = $record->jaminans->get(1);
+
+    $jaminan1Text = $jaminan1?->keterangan_jaminan ?? '-';
+    $atasNama1 = $jaminan1?->atasNamas?->pluck('atas_nama')?->join(', ') ?: '-';
+
+    $jaminan2Text = $jaminan2?->keterangan_jaminan ?? '-';
+    $atasNama2 = $jaminan2?->atasNamas?->pluck('atas_nama')?->join(', ') ?: '-';
+
+    if (! function_exists('terbilangAkadBulanan')) {
+        function terbilangAkadBulanan($angka)
+        {
+            $angka = abs((int) round($angka));
+            $baca = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+
+            if ($angka < 12) return $baca[$angka];
+            if ($angka < 20) return terbilangAkadBulanan($angka - 10) . ' Belas';
+            if ($angka < 100) return terbilangAkadBulanan(intval($angka / 10)) . ' Puluh ' . terbilangAkadBulanan($angka % 10);
+            if ($angka < 200) return 'Seratus ' . terbilangAkadBulanan($angka - 100);
+            if ($angka < 1000) return terbilangAkadBulanan(intval($angka / 100)) . ' Ratus ' . terbilangAkadBulanan($angka % 100);
+            if ($angka < 2000) return 'Seribu ' . terbilangAkadBulanan($angka - 1000);
+            if ($angka < 1000000) return terbilangAkadBulanan(intval($angka / 1000)) . ' Ribu ' . terbilangAkadBulanan($angka % 1000);
+            if ($angka < 1000000000) return terbilangAkadBulanan(intval($angka / 1000000)) . ' Juta ' . terbilangAkadBulanan($angka % 1000000);
+
+            return number_format($angka, 0, ',', '.');
+        }
+    }
+
+    $terbilangPlafond = trim(terbilangAkadBulanan($jumlahPinjaman)) . ' Rupiah';
+    $terbilangJangka = trim(terbilangAkadBulanan($jangkaWaktu));
+    $terbilangBunga = trim(terbilangAkadBulanan($bungaPersen));
+    $terbilangBiaya = trim(terbilangAkadBulanan($totalPersenBiaya));
+
+    $biayaAsuransi = (float) ($record->biaya_asuransi ?? 0);
+    $biayaAdm = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_adm_persen ?? 0)) / 100;
+    $biayaProvisi = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_provisi_persen ?? 0)) / 100;
+    $biayaMaterai = (float) ($record->biaya_materai ?? 0);
+    $biayaOp = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_op_persen ?? 0)) / 100;
+    $biayaKyd = (float) ($record->biaya_kyd ?? 0);
+    $biayaLain = (float) ($record->biaya_lain ?? 0);
+
+    $totalBiaya = $biayaAsuransi + $biayaAdm + $biayaProvisi + $biayaMaterai + $biayaOp + $biayaKyd + $biayaLain;
+    $diterimaBersih = (float) ($record->plafond ?? 0) - $totalBiaya;
 @endphp
 
     <div class="akad-page">
@@ -153,22 +238,22 @@
             <tr>
                 <td class="label">Tempat / Tanggal Lahir</td>
                 <td class="sep">:</td>
-                <td>{{ $tempatLahir }}, {{ $tanggalLahir }}</td>
+                <td>{{ $tempatLahirPeminjam }}, {{ $tanggalLahirPeminjam }}</td>
             </tr>
             <tr>
                 <td class="label">Pekerjaan</td>
                 <td class="sep">:</td>
-                <td>{{ $pekerjaan }}</td>
+                <td>{{ $pekerjaanPeminjam }}</td>
             </tr>
             <tr>
                 <td class="label">No. KTP / SIM / Domisili</td>
                 <td class="sep">:</td>
-                <td>{{ $nik }}</td>
+                <td>{{ $nikPeminjam }}</td>
             </tr>
             <tr>
                 <td class="label">Alamat</td>
                 <td class="sep">:</td>
-                <td>{{ $alamat }}</td>
+                <td>{{ $alamatPeminjam }}</td>
             </tr>
         </table>
 
@@ -236,58 +321,6 @@
     </div>
 
     <div class="akad-page">
-        @php
-            $pokokPerBulan = $jangkaWaktu > 0
-                ? ceil((($jumlahPinjaman / $jangkaWaktu) / 1000)) * 1000
-                : 0;
-
-            $bungaNominalPerBulan = ceil((($jumlahPinjaman * ((float) $record->bunga_persen ?? 0) / 100) / 1000)) * 1000;
-
-            $angsuranPerBulan = $pokokPerBulan + $bungaNominalPerBulan;
-
-            $tanggalPengajuanFormat = !empty($record->tanggal_pengajuan)
-                ? Carbon::parse($record->tanggal_pengajuan)->translatedFormat('d F Y')
-                : '-';
-
-            $tanggalJatuhTempoFormat = !empty($record->tanggal_jatuh_tempo)
-                ? Carbon::parse($record->tanggal_jatuh_tempo)->translatedFormat('d F Y')
-                : '-';
-
-            $bungaPersen = (float) ($record->bunga_persen ?? 0);
-            $totalPersenBiaya = (float) ($record->biaya_adm_persen ?? 0)
-                + (float) ($record->biaya_provisi_persen ?? 0)
-                + (float) ($record->biaya_op_persen ?? 0);
-
-            $jaminan1 = $record->jaminans->get(0);
-            $jaminan2 = $record->jaminans->get(1);
-
-            $jaminan1Text = $jaminan1?->keterangan_jaminan ?? '-';
-            $atasNama1 = $jaminan1?->atasNamas?->pluck('atas_nama')?->join(', ') ?: '-';
-
-            $jaminan2Text = $jaminan2?->keterangan_jaminan ?? '-';
-            $atasNama2 = $jaminan2?->atasNamas?->pluck('atas_nama')?->join(', ') ?: '-';
-
-            if (! function_exists('terbilangAkadBulanan')) {
-                function terbilangAkadBulanan($angka) {
-                    $angka = abs((int) round($angka));
-                    $baca = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
-                    if ($angka < 12) return $baca[$angka];
-                    if ($angka < 20) return terbilangAkadBulanan($angka - 10) . " Belas";
-                    if ($angka < 100) return terbilangAkadBulanan(intval($angka / 10)) . " Puluh " . terbilangAkadBulanan($angka % 10);
-                    if ($angka < 200) return "Seratus " . terbilangAkadBulanan($angka - 100);
-                    if ($angka < 1000) return terbilangAkadBulanan(intval($angka / 100)) . " Ratus " . terbilangAkadBulanan($angka % 100);
-                    if ($angka < 2000) return "Seribu " . terbilangAkadBulanan($angka - 1000);
-                    if ($angka < 1000000) return terbilangAkadBulanan(intval($angka / 1000)) . " Ribu " . terbilangAkadBulanan($angka % 1000);
-                    if ($angka < 1000000000) return terbilangAkadBulanan(intval($angka / 1000000)) . " Juta " . terbilangAkadBulanan($angka % 1000000);
-                    return number_format($angka, 0, ',', '.');
-                }
-            }
-
-            $terbilangPlafond = trim(terbilangAkadBulanan($jumlahPinjaman)) . ' Rupiah';
-            $terbilangJangka = trim(terbilangAkadBulanan($jangkaWaktu));
-            $terbilangBunga = trim(terbilangAkadBulanan($bungaPersen));
-            $terbilangBiaya = trim(terbilangAkadBulanan($totalPersenBiaya));
-        @endphp
 
         <div class="doc-title">Perjanjian Kredit</div>
         <div class="doc-number">Nomor : {{ $nomorAkad }}</div>
@@ -308,7 +341,7 @@
             <tr>
                 <td style="width: 20px; padding-top: 10px;">II.</td>
                 <td style="padding-top: 10px;">
-                    <strong>{{ strtoupper($namaPeminjam) }}</strong> yang beralamat di <strong>{{ $alamat }}</strong>,
+                    <strong>{{ strtoupper($namaPeminjam) }}</strong> yang beralamat di <strong>{{ $alamatPeminjam }}</strong>,
                     dalam hal ini bertindak untuk dan atas nama diri sendiri, selanjutnya disebut
                     <strong>PIHAK KEDUA</strong>. Dengan ini menggabungkan diri masing-masing untuk memikul hutang
                     sejumlah yang tersebut dibawah ini, atau segala hutang yang akan timbul karena perjanjian ini,
@@ -452,10 +485,6 @@
                 </tr>
             </table>
         </div>
-        @php
-            $namaPenanggungJawab = $pj?->nama ?? '-';
-            $tanggalHariIniFormat = now()->translatedFormat('d F Y');
-        @endphp
         <br>
         <div class="pasal">
             <div class="pasal-title">Pasal 4</div>
@@ -515,7 +544,7 @@
                 <tr>
                     <td><br>Menyetujui,<br>Manager</td>
                     <td><br>Menyetujui,<br>Kabag. Kredit</td>
-                    <td>Denpasar, {{ $tanggalHariIniFormat }}<br>Penerima Kredit,<br>Peminjam</td>
+                    <td>Denpasar, {{ $tanggalCetak }}<br>Penerima Kredit,<br>Peminjam</td>
                 </tr>
                 <tr>
                     <td class="signature-space"></td>
@@ -546,24 +575,7 @@
         </div>
     </div>
         <div class="akad-page">
-        @php
-            $tempatLahirPeminjam = $tempatLahir ?? '-';
-            $tanggalLahirPeminjam = $tanggalLahir ?? '-';
-            $pekerjaanPeminjam = $pekerjaan ?? '-';
-            $nikPeminjam = $nik ?? '-';
-            $alamatPeminjam = $alamat ?? '-';
-
-            $namaPenanggungJawab = $pj?->nama ?? '-';
-            $tempatLahirPenanggung = $pj?->tempat_lahir ?? '-';
-            $tanggalLahirPenanggung = !empty($pj?->tanggal_lahir)
-                ? Carbon::parse($pj->tanggal_lahir)->format('d-m-Y')
-                : '-';
-            $pekerjaanPenanggung = $pj?->pekerjaan ?? '-';
-            $nikPenanggung = $pj?->nik ?? '-';
-            $alamatPenanggung = $pj?->alamat ?? '-';
-
-            $tanggalHariIniFormat = now()->translatedFormat('d F Y');
-        @endphp
+        
 
         <div class="doc-title">Surat Pengakuan Hutang</div>
         <div class="divider"></div>
@@ -678,7 +690,7 @@
             <table class="signature-table">
                 <tr>
                     <td style="text-align: right;">
-                        Denpasar, {{ $tanggalHariIniFormat }} <br><br><br>
+                        Denpasar, {{ $tanggalCetak }} <br><br><br>
                         <div class="signature-space"></div>
                         <strong>( {{ $namaPeminjam }} )</strong>
                     </td>
@@ -687,21 +699,6 @@
         </div>
     </div>
         <div class="akad-page">
-        @php
-            $fidusia = $jaminanPertama?->fidusia;
-
-            $fidusiaMerk = $fidusia?->merk ?? '-';
-            $fidusiaType = $fidusia?->type ?? '-';
-            $fidusiaWarna = $fidusia?->warna ?? '-';
-            $fidusiaTahun = $fidusia?->tahun ?? '-';
-            $fidusiaNoRangka = $fidusia?->no_rangka ?? '-';
-            $fidusiaNoMesin = $fidusia?->no_mesin ?? '-';
-            $fidusiaNoPolisi = $fidusia?->no_polisi ?? '-';
-            $fidusiaNoBpkb = $fidusia?->no_bpkb ?? '-';
-            $fidusiaAtasNama = $fidusia?->atasnama ?? ($atasNamaText ?? '-');
-            $fidusiaTaksiran = (float) ($fidusia?->taksiran_harga ?? 0);
-            $fidusiaTempat = $fidusia?->tempat_penyimpanan ?? '-';
-        @endphp
 
         <div class="doc-title">Perjanjian Fidusia</div>
         <div class="doc-number">Nomor : {{ $nomorAkad }}</div>
@@ -935,21 +932,6 @@
         </div>
     </div>
     <div class="akad-page">
-        @php
-            $fidusia = $jaminanPertama?->fidusia;
-
-            $fidusiaMerk = $fidusia?->merk ?? '-';
-            $fidusiaType = $fidusia?->type ?? '-';
-            $fidusiaWarna = $fidusia?->warna ?? '-';
-            $fidusiaTahun = $fidusia?->tahun ?? '-';
-            $fidusiaNoRangka = $fidusia?->no_rangka ?? '-';
-            $fidusiaNoMesin = $fidusia?->no_mesin ?? '-';
-            $fidusiaNoPolisi = $fidusia?->no_polisi ?? '-';
-            $fidusiaNoBpkb = $fidusia?->no_bpkb ?? '-';
-            $fidusiaAtasNama = $fidusia?->atasnama ?? ($atasNamaText ?? '-');
-            $fidusiaTaksiran = (float) ($fidusia?->taksiran_harga ?? 0);
-            $fidusiaTempat = $fidusia?->tempat_penyimpanan ?? 'KSP. GUNUNG SARI SEDANA';
-        @endphp
 
         <div class="doc-title">Daftar Barang - Barang Yang Dijadikan Secara Fidusia</div>
         <div class="divider"></div>
@@ -1007,21 +989,6 @@
         </table>
     </div>
         <div class="akad-page">
-        @php
-            $fidusia = $jaminanPertama?->fidusia;
-
-            $fidusiaMerk = $fidusia?->merk ?? '-';
-            $fidusiaType = $fidusia?->type ?? '-';
-            $fidusiaWarna = $fidusia?->warna ?? '-';
-            $fidusiaTahun = $fidusia?->tahun ?? '-';
-            $fidusiaNoRangka = $fidusia?->no_rangka ?? '-';
-            $fidusiaNoMesin = $fidusia?->no_mesin ?? '-';
-            $fidusiaNoPolisi = $fidusia?->no_polisi ?? '-';
-            $fidusiaNoBpkb = $fidusia?->no_bpkb ?? '-';
-            $fidusiaAtasNama = $fidusia?->atasnama ?? ($atasNamaText ?? '-');
-            $tanggalHariIniFormat = now()->translatedFormat('d F Y');
-        @endphp
-
         <div class="doc-title">Surat Keterangan / Pernyataan Cek Pisik Kendaraan Bermotor</div>
         <div class="divider"></div>
 
@@ -1123,7 +1090,7 @@
         <table class="signature-table mt-20">
             <tr>
                 <td><br><br>Yang Menyerahkan,</td>
-                <td> Denpasar, {{ $tanggalHariIniFormat }}<br>Mengetahui,<br>KSP. GUNUNG SARI SEDANA<br>Manager</td>
+                <td> Denpasar, {{ $tanggalCetak }}<br>Mengetahui,<br>KSP. GUNUNG SARI SEDANA<br>Manager</td>
                 <td><br><br>Adm. Kredit</td>
             </tr>
             <tr>
@@ -1139,10 +1106,6 @@
         </table>
     </div>
         <div class="akad-page">
-        @php
-            $tanggalHariIniFormat = now()->translatedFormat('d F Y');
-            $jenisMember = $member?->jenis?->keterangan ?? '-';
-        @endphp
 
         <div class="doc-title">Surat Permohonan Menjadi Anggota<br>Koperasi Gunung Sari Sedana Denpasar</div>
         <div class="doc-number">Nomor : {{ $nomorAkad }}</div>
@@ -1199,7 +1162,7 @@
             <tr>
                 <td><br>Menyetujui,<br>Ketua</td>
                 <td><br>Mengetahui,<br>Pengawas</td>
-                <td>Denpasar, {{ $tanggalHariIniFormat }}<br>Hormat kami,<br>Pemohon</td>
+                <td>Denpasar, {{ $tanggalCetak }}<br>Hormat kami,<br>Pemohon</td>
             </tr>
             <tr>
                 <td class="signature-space"><br><br><br><br></td>
@@ -1214,20 +1177,6 @@
         </table>
     </div>
         <div class="akad-page">
-        @php
-            $biayaAsuransi = (float) ($record->biaya_asuransi ?? 0);
-            $biayaAdm = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_adm_persen ?? 0)) / 100;
-            $biayaProvisi = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_provisi_persen ?? 0)) / 100;
-            $biayaMaterai = (float) ($record->biaya_materai ?? 0);
-            $biayaOp = ((float) ($record->plafond ?? 0) * (float) ($record->biaya_op_persen ?? 0)) / 100;
-            $biayaKyd = (float) ($record->biaya_kyd ?? 0);
-            $biayaLain = (float) ($record->biaya_lain ?? 0);
-
-            $totalBiaya = $biayaAsuransi + $biayaAdm + $biayaProvisi + $biayaMaterai + $biayaOp + $biayaKyd + $biayaLain;
-            $diterimaBersih = (float) ($record->plafond ?? 0) - $totalBiaya;
-
-            $tanggalHariIniFormat = now()->translatedFormat('d F Y');
-        @endphp
 
         <div class="header">
             <div class="koperasi-title">Koperasi Gunung Sari Sedana Denpasar</div>
@@ -1312,7 +1261,7 @@
             <table class="signature-table">
                 <tr>
                     <td><br>Kasir</td>
-                    <td>Denpasar, {{ $tanggalHariIniFormat }}<br>Penerima Kredit</td>
+                    <td>Denpasar, {{ $tanggalCetak }}<br>Penerima Kredit</td>
                 </tr>
                 <tr>
                     <td class="signature-space"></td>
