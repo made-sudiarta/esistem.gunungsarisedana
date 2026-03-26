@@ -234,83 +234,97 @@ class AbsensiResource extends Resource
 
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->defaultSort('tanggal', 'desc') 
-            ->columns([
-                
-                Tables\Columns\TextColumn::make('tanggal')
-                    ->date()
-                    ->sortable()
-                    ->searchable(),
+{
+    return $table
+        ->defaultSort('tanggal', 'desc')
+        ->columns([
+            Tables\Columns\TextColumn::make('tanggal')
+                ->date()
+                ->sortable()
+                ->searchable(),
 
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('User')
-                    ->searchable()
-                    ->sortable()
-                    ->visible(fn () => auth()->user()->hasRole('super_admin')),
+            Tables\Columns\TextColumn::make('user.name')
+                ->label('User')
+                ->searchable()
+                ->sortable()
+                ->visible(fn () => auth()->user()->hasRole('super_admin')),
 
-                Tables\Columns\TextColumn::make('jam_masuk'),
-                Tables\Columns\TextColumn::make('jam_keluar'),
+            Tables\Columns\TextColumn::make('jam_masuk'),
+            Tables\Columns\TextColumn::make('jam_keluar'),
 
-                Tables\Columns\TextColumn::make('jumlah_jam')
-                    ->suffix(' jam'),
+            Tables\Columns\TextColumn::make('jumlah_jam')
+                ->suffix(' jam'),
 
-                Tables\Columns\TextColumn::make('jumlah_setoran')
-                    ->money('IDR'),
+            Tables\Columns\TextColumn::make('jumlah_setoran')
+                ->money('IDR'),
 
-                Tables\Columns\TextColumn::make('penarikan')
-                    ->label('Penarikan')
-                    ->money('IDR')
-                    ->toggleable(),
-                
-                
+            Tables\Columns\TextColumn::make('penarikan')
+                ->label('Penarikan')
+                ->money('IDR')
+                ->toggleable(),
+        ])
 
-            ])
-            
-            ->modifyQueryUsing(function ($query) {
-                if (! auth()->user()->hasRole('super_admin')) {
-                    $query->where('user_id', auth()->id());
-                }
-            })
+        ->modifyQueryUsing(function ($query) {
+            if (! auth()->user()->hasRole('super_admin')) {
+                $query->where('user_id', auth()->id());
+            }
+        })
 
-            ->filters([
-                Tables\Filters\TrashedFilter::make(),
-            ])
-            ->actions([
-                Actions\ViewAction::make(),
+        ->filters([
+            Tables\Filters\Filter::make('hari_ini')
+                ->label('Hari Ini')
+                ->default()
+                ->query(fn ($query) => $query->whereDate('tanggal', now())),
 
-                Actions\EditAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('super_admin') && ! $record->trashed()
-                    ),
+            Tables\Filters\Filter::make('range_tanggal')
+                ->label('Range Tanggal')
+                ->form([
+                    \Filament\Forms\Components\DatePicker::make('dari')
+                        ->label('Dari'),
+                    \Filament\Forms\Components\DatePicker::make('sampai')
+                        ->label('Sampai'),
+                ])
+                ->query(function ($query, array $data) {
+                    $dari = $data['dari'] ?? null;
+                    $sampai = $data['sampai'] ?? null;
 
-                Actions\DeleteAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('super_admin') && ! $record->trashed()
-                    ),
+                    return $query
+                        ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+                        ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai));
+                }),
 
-                Actions\RestoreAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('super_admin') && $record->trashed()
-                    ),
+            Tables\Filters\TrashedFilter::make(),
+        ])
 
-                Actions\ForceDeleteAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('super_admin') && $record->trashed()
-                    ),
-                
+        ->actions([
+            Actions\ViewAction::make(),
 
-            ])
-            
+            Actions\EditAction::make()
+                ->visible(fn ($record) =>
+                    auth()->user()->hasRole('super_admin') && ! $record->trashed()
+                ),
 
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn () => auth()->user()->hasRole('super_admin')),
-            ]);
-            
+            Actions\DeleteAction::make()
+                ->visible(fn ($record) =>
+                    auth()->user()->hasRole('super_admin') && ! $record->trashed()
+                ),
 
-    }
+            Actions\RestoreAction::make()
+                ->visible(fn ($record) =>
+                    auth()->user()->hasRole('super_admin') && $record->trashed()
+                ),
+
+            Actions\ForceDeleteAction::make()
+                ->visible(fn ($record) =>
+                    auth()->user()->hasRole('super_admin') && $record->trashed()
+                ),
+        ])
+
+        ->bulkActions([
+            Tables\Actions\DeleteBulkAction::make()
+                ->visible(fn () => auth()->user()->hasRole('super_admin')),
+        ]);
+}
 
     public static function getRelations(): array
     {
