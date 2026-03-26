@@ -35,6 +35,20 @@ class CreateTransaksiKreditBulanan extends CreateRecord
 
         return $firstRecord ?? new TransaksiKreditBulanan();
     }
+    protected function getCreateFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Simpan');
+    }
+    public static function canCreateAnother(): bool
+    {
+        return false;
+    }
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->label('Batalkan');
+    }
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

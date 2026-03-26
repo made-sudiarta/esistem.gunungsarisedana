@@ -17,14 +17,26 @@ use Filament\Forms\Components\Repeater;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\RawJs;
 use Filament\Forms\Components\Grid;
+use App\Filament\Resources\TransaksiKreditBulananResource\Widgets\TransaksiKreditBulananStats;
 
 class TransaksiKreditBulananResource extends Resource
 {
     protected static ?string $model = TransaksiKreditBulanan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Transaksi Bulanan';
     protected static ?string $navigationGroup = 'Pinjaman';
+
+    protected static ?string $modelLabel = 'Transaksi Pinjaman Bulanan';
+    protected static ?string $pluralModelLabel = 'Transaksi Pinjaman Bulanan';
+    protected static ?string $title = 'Transaksi Pinjaman Bulanan';
+
+    public static function getWidgets(): array
+    {
+        return [
+            TransaksiKreditBulananStats::class,
+        ];
+    }
 
     public static function toNumber($value): float
     {
@@ -198,21 +210,65 @@ class TransaksiKreditBulananResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->defaultSort('created_at', 'desc') 
-            ->columns([
-            TextColumn::make('tanggal_transaksi')->date(),
-            TextColumn::make('kreditBulanan.no_pokok'),
-            TextColumn::make('kreditBulanan.member.nama_lengkap'),
-            TextColumn::make('saldo_awal')->money('idr'),
-            TextColumn::make('pokok')->money('idr'),
-            TextColumn::make('bunga')->money('idr'),
-            TextColumn::make('denda')->money('idr'),
-            TextColumn::make('nominal_bayar')->money('idr'),
-            TextColumn::make('sisa_saldo')->money('idr'),
+{
+    return $table
+        ->defaultSort('created_at', 'desc')
+        ->columns([
+            TextColumn::make('tanggal_transaksi')
+                ->label('Tanggal')
+                ->date(),
+
+            TextColumn::make('kreditBulanan.no_pokok')
+                ->label('No Pokok'),
+
+            TextColumn::make('kreditBulanan.member.nama_lengkap')
+                ->label('Nama Peminjam'),
+
+            TextColumn::make('saldo_awal')
+                ->label('Saldo Awal')
+                ->money('idr'),
+
+            TextColumn::make('pokok')
+                ->label('Pokok')
+                ->money('idr'),
+
+            TextColumn::make('bunga')
+                ->label('Bunga')
+                ->money('idr'),
+
+            TextColumn::make('denda')
+                ->label('Denda')
+                ->money('idr'),
+
+            TextColumn::make('nominal_bayar')
+                ->label('Total Bayar')
+                ->money('idr'),
+
+            TextColumn::make('sisa_saldo')
+                ->label('Sisa Saldo')
+                ->money('idr'),
+        ])
+        ->filters([
+            Tables\Filters\Filter::make('today')
+                ->label('Hari Ini')
+                ->default()
+                ->query(fn (Builder $query) => $query->whereDate('tanggal_transaksi', now())),
+
+            Tables\Filters\Filter::make('tanggal')
+                ->form([
+                    DatePicker::make('dari'),
+                    DatePicker::make('sampai'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    $dari = $data['dari'] ?? null;
+                    $sampai = $data['sampai'] ?? null;
+
+                    return $query
+                        ->when($dari, fn (Builder $q) => $q->whereDate('tanggal_transaksi', '>=', $dari))
+                        ->when($sampai, fn (Builder $q) => $q->whereDate('tanggal_transaksi', '<=', $sampai));
+                }),
         ]);
-    }
+}
 
     public static function getEloquentQuery(): Builder
     {
