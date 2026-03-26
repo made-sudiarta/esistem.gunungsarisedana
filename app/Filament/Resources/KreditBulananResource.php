@@ -23,6 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\KreditBulananResource\Widgets\KreditBulananStats;
+use Filament\Support\RawJs;
 
 class KreditBulananResource extends Resource
 {
@@ -35,6 +36,31 @@ class KreditBulananResource extends Resource
     protected static ?string $modelLabel = 'Pinjaman Bulanan';
     protected static ?string $pluralModelLabel = 'Pinjaman Bulanan';
     protected static ?string $title = 'Pinjaman Bulanan';
+
+    public static function toNumber($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        return (float) preg_replace('/[^0-9]/', '', (string) $value);
+    }
+
+    protected static function moneyInput(string $name, string $label, bool $required = false): TextInput
+    {
+        $field = TextInput::make($name)
+            ->label($label)
+            ->prefix('Rp')
+            ->mask(RawJs::make('$money($input)'))
+            ->stripCharacters([',', '.'])
+            ->dehydrateStateUsing(fn ($state) => static::toNumber($state));
+
+        if ($required) {
+            $field->required();
+        }
+
+        return $field;
+    }
     public static function getWidgets(): array
     {
         return [
@@ -76,6 +102,31 @@ class KreditBulananResource extends Resource
         });
     }
 
+    protected static function recalculateLoan(callable $set, callable $get): void
+    {
+        $plafond = static::toNumber($get('plafond'));
+        $bunga = (float) ($get('bunga_persen') ?? 0);
+        $adm = (float) ($get('biaya_adm_persen') ?? 0);
+        $provisi = (float) ($get('biaya_provisi_persen') ?? 0);
+        $op = (float) ($get('biaya_op_persen') ?? 0);
+
+        $kyd = static::toNumber($get('biaya_kyd'));
+        $materai = static::toNumber($get('biaya_materai'));
+        $asuransi = static::toNumber($get('biaya_asuransi'));
+        $lain = static::toNumber($get('biaya_lain'));
+
+        $jangkaWaktu = (int) ($get('jangka_waktu') ?? 0);
+
+        $nominalPersen = $plafond * ($adm + $provisi + $op) / 100;
+        $totalTagihan = $nominalPersen + $materai + $kyd + $asuransi + $lain;
+        $angsuranPerBulan = $jangkaWaktu > 0
+            ? ceil((($plafond * $bunga / 100) + ($plafond / $jangkaWaktu)) / 1000) * 1000
+            : 0;
+
+        $set('total_tagihan', round($totalTagihan, 0));
+        $set('angsuran_per_bulan', round($angsuranPerBulan, 0));
+        $set('sisa_pokok', round($plafond, 0));
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -88,7 +139,7 @@ class KreditBulananResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set('group_id', null);
                             }),
@@ -133,25 +184,21 @@ class KreditBulananResource extends Resource
                     ])
                     ->columns(2),
 
-                Section::make('Data Pinjaman')
+                    Section::make('Data Pinjaman')
                     ->schema([
                         TextInput::make('no_pokok')
                             ->label('No Pokok')
                             ->required(),
 
-                        TextInput::make('plafond')
-                            ->label('Plafond')
-                            ->numeric()
-                            ->required()
-                            ->prefix('Rp')
-                            ->reactive()
+                        static::moneyInput('plafond', 'Plafond', true)
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
                         DatePicker::make('tanggal_pengajuan')
                             ->label('Tanggal Pengajuan')
                             ->default(now())
                             ->required()
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 $jangka = (int) ($get('jangka_waktu') ?? 0);
 
@@ -166,7 +213,7 @@ class KreditBulananResource extends Resource
                             ->label('Jangka Waktu (bulan)')
                             ->numeric()
                             ->required()
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 $tgl = $get('tanggal_pengajuan');
 
@@ -186,7 +233,7 @@ class KreditBulananResource extends Resource
                             ->numeric()
                             ->default(0)
                             ->required()
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
                         Textarea::make('tujuan_pinjaman')
@@ -197,60 +244,70 @@ class KreditBulananResource extends Resource
                             ->label('Biaya Adm (%)')
                             ->numeric()
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
                         TextInput::make('biaya_provisi_persen')
                             ->label('Biaya Provisi (%)')
                             ->numeric()
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
                         TextInput::make('biaya_op_persen')
                             ->label('Biaya OP (%)')
                             ->numeric()
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
-                        TextInput::make('biaya_kyd')
-                            ->label('Biaya KYD')
-                            ->numeric()
-                            ->prefix('Rp')
+                        static::moneyInput('biaya_kyd', 'Biaya KYD')
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
-                        TextInput::make('biaya_materai')
-                            ->label('Biaya Materai')
-                            ->numeric()
-                            ->prefix('Rp')
+                        static::moneyInput('biaya_materai', 'Biaya Materai')
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
-                        TextInput::make('biaya_asuransi')
-                            ->label('Biaya Asuransi')
-                            ->numeric()
-                            ->prefix('Rp')
+                        static::moneyInput('biaya_asuransi', 'Biaya Asuransi')
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
-                        TextInput::make('biaya_lain')
-                            ->label('Biaya Lain')
-                            ->numeric()
-                            ->prefix('Rp')
+                        static::moneyInput('biaya_lain', 'Biaya Lain')
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get)),
 
                         Textarea::make('keterangan_biaya_lain')
                             ->label('Keterangan Biaya Lain')
                             ->rows(2),
 
-                        
+                        TextInput::make('total_tagihan')
+                            ->label('Total Tagihan')
+                            ->prefix('Rp')
+                            ->readOnly()
+                            ->dehydrated(true)
+                            ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 0, ',', '.') : null)
+                            ->dehydrateStateUsing(fn ($state) => static::toNumber($state)),
+
+                        TextInput::make('angsuran_per_bulan')
+                            ->label('Angsuran per Bulan')
+                            ->prefix('Rp')
+                            ->readOnly()
+                            ->dehydrated(true)
+                            ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 0, ',', '.') : null)
+                            ->dehydrateStateUsing(fn ($state) => static::toNumber($state)),
+
+                        TextInput::make('sisa_pokok')
+                            ->label('Sisa Pokok')
+                            ->prefix('Rp')
+                            ->readOnly()
+                            ->dehydrated(true)
+                            ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 0, ',', '.') : null)
+                            ->dehydrateStateUsing(fn ($state) => static::toNumber($state)),
 
                         Select::make('status')
                             ->label('Status')
@@ -264,8 +321,7 @@ class KreditBulananResource extends Resource
                             ->required(),
                     ])
                     ->columns(3),
-
-                Section::make('Data Jaminan')
+                    Section::make('Data Jaminan')
                     ->schema([
                         Repeater::make('jaminans')
                             ->relationship()
@@ -306,8 +362,13 @@ class KreditBulananResource extends Resource
                                         TextInput::make('atasnama')->label('Atas Nama'),
                                         TextInput::make('taksiran_harga')
                                             ->label('Taksiran Harga')
-                                            ->numeric()
-                                            ->prefix('Rp'),
+                                            ->prefix('Rp')
+                                            ->mask(RawJs::make('$money($input)'))
+                                            ->stripCharacters([',', '.'])
+                                            ->dehydrateStateUsing(fn ($state) => static::toNumber($state))
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn ($state, callable $set, callable $get) => static::recalculateLoan($set, $get))
+                                            ->required(),
 
                                         Textarea::make('tempat_penyimpanan')
                                             ->label('Tempat Penyimpanan')
@@ -326,30 +387,7 @@ class KreditBulananResource extends Resource
             ->columns(1);
     }
 
-    protected static function recalculateLoan(callable $set, callable $get): void
-    {
-        $plafond = (float) ($get('plafond') ?? 0);
-        $bunga = (float) ($get('bunga_persen') ?? 0);
-        $adm = (float) ($get('biaya_adm_persen') ?? 0);
-        $provisi = (float) ($get('biaya_provisi_persen') ?? 0);
-        $op = (float) ($get('biaya_op_persen') ?? 0);
-
-        $kyd = (float) ($get('biaya_kyd') ?? 0);
-        $materai = (float) ($get('biaya_materai') ?? 0);
-        $asuransi = (float) ($get('biaya_asuransi') ?? 0);
-        $lain = (float) ($get('biaya_lain') ?? 0);
-
-        $jangkaWaktu = (int) ($get('jangka_waktu') ?? 0);
-
-        $nominalPersen = $plafond * ($adm + $provisi + $op) / 100;
-        $totalTagihan = $nominalPersen + $materai + $kyd + $asuransi + $lain;
-        $angsuranPerBulan = $jangkaWaktu > 0 ? ceil((($plafond*$bunga/100) + ($plafond/$jangkaWaktu))/1000)*1000 : 0;
-
-        $set('total_tagihan', round($totalTagihan, 2));
-        $set('angsuran_per_bulan', round($angsuranPerBulan, 2));
-        $set('sisa_pokok', round($plafond, 2));
-    }
-
+    
     public static function table(Table $table): Table
     {
         return $table

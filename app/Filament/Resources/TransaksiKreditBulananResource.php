@@ -87,7 +87,7 @@ class TransaksiKreditBulananResource extends Resource
                         })
                         ->searchable()
                         ->required()
-                        ->reactive()
+                        ->live(onBlur: true)
                         ->afterStateUpdated(function ($state, $set) {
                             $kredit = KreditBulanan::find($state);
                             $saldo = $kredit?->getSisaSaldo() ?? 0;
