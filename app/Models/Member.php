@@ -56,5 +56,9 @@ class Member extends Model
     {
         return $this->hasMany(TrxSimpananWajib::class, 'member_id', 'id');
     }
+    public function kreditBulanans()
+    {
+        return $this->hasMany(\App\Models\KreditBulanan::class, 'member_id');
+    }
 
 }

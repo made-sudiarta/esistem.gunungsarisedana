@@ -34,4 +34,8 @@ class Group extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    public function kreditBulanans()
+    {
+        return $this->hasMany(\App\Models\KreditBulanan::class, 'group_id');
+    }
 }

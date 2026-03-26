@@ -20,4 +20,18 @@ class CreateKreditHarian extends CreateRecord
 
         return $data;
     }
+    protected function getCreateFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Simpan Pengajuan');
+    }
+    public static function canCreateAnother(): bool
+    {
+        return false;
+    }
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->label('Batalkan');
+    }
 }

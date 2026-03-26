@@ -6,7 +6,7 @@ use App\Http\Controllers\PrintController;
 use App\Http\Controllers\CetakMemberController;
 use App\Http\Controllers\PrintSimpananBerjangkaController;
 use App\Http\Controllers\KreditHarianPrintController;
-
+use App\Http\Controllers\KreditBulananPdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,3 +58,6 @@ Route::get(
 )->name('kredit-harian.print.index');
 Route::get('/kredit-harian/{record}/akad-pdf', [KreditHarianPrintController::class, 'akad'])
     ->name('kredit-harian.akad-pdf');
+Route::get('/kredit-bulanan/{record}/akad-pdf', [KreditBulananPdfController::class, 'akad'])
+    ->name('kredit-bulanan.akad-pdf');
+    
