@@ -260,29 +260,37 @@ class KreditHarianResource extends Resource
                     ->sortable()
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
-                TextColumn::make('jaminan')
-                    ->label('Jaminan')
-                    ->searchable()
-                    ->limit(20),
+                // TextColumn::make('jaminan')
+                //     ->label('Jaminan')
+                //     ->searchable()
+                //     ->limit(20),
 
-                TextColumn::make('prov_adm')
-                    ->label('Prov/Adm')
-                    ->money('IDR', locale: 'id'),
+                // TextColumn::make('prov_adm')
+                //     ->label('Prov/Adm')
+                //     ->money('IDR', locale: 'id'),
 
-                TextColumn::make('materai')
-                    ->label('Materai')
-                    ->money('IDR', locale: 'id'),
-                TextColumn::make('sisa_pokok')
-                    ->label('Sisa Pokok')
+                // TextColumn::make('materai')
+                //     ->label('Materai')
+                //     ->money('IDR', locale: 'id'),
+                TextColumn::make('plafond')
+                    ->label('Plafond')
                     ->money('idr', true)
+                    ->getStateUsing(function ($record) {
+                        $plafond = $record->plafond;
+
+                        $admin = ($record->admin_persen / 100) * $plafond;
+                        $bunga = ($record->bunga_persen / 100) * $plafond;
+
+                        return $plafond + $admin + $bunga;
+                    })
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
-                TextColumn::make('bunga_persen')->suffix('%')
-                    ->color(fn ($record) => static::rowColor($record))
-                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
-                TextColumn::make('admin_persen')->suffix('%')
-                    ->color(fn ($record) => static::rowColor($record))
-                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                // TextColumn::make('bunga_persen')->suffix('%')
+                //     ->color(fn ($record) => static::rowColor($record))
+                //     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                // TextColumn::make('admin_persen')->suffix('%')
+                //     ->color(fn ($record) => static::rowColor($record))
+                //     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('tanggal_pengajuan')->date()
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
@@ -296,10 +304,15 @@ class KreditHarianResource extends Resource
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
-                TextColumn::make('cicilan_harian')->label('Cicilan/Hari')
+                TextColumn::make('sisa_pokok')
+                    ->label('Sisa Pokok')
                     ->money('idr', true)
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                // TextColumn::make('cicilan_harian')->label('Cicilan/Hari')
+                //     ->money('idr', true)
+                //     ->color(fn ($record) => static::rowColor($record))
+                //     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -325,10 +338,29 @@ class KreditHarianResource extends Resource
                         };
                     })
                     ->weight('medium'),
+                TextColumn::make('tanggal_lunas')
+                    ->label('Tanggal Lunas')
+                    ->getStateUsing(function ($record) {
+
+                        if ($record->status !== 'lunas') {
+                            return '-';
+                        }
+
+                        $lastTanggal = $record->transaksis()
+                            ->latest('tanggal_transaksi')
+                            ->value('tanggal_transaksi');
+
+                        return $lastTanggal
+                            ? \Carbon\Carbon::parse($lastTanggal)->format('M d, Y')
+                            : '-';
+                    })
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
 
 
             ])
+            
             ->filters([
                 Tables\Filters\SelectFilter::make('group_id')
                     ->label('Group Kolektor')
