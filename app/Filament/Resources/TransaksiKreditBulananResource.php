@@ -56,17 +56,12 @@ class TransaksiKreditBulananResource extends Resource
     {
         $saldo = static::toNumber($saldo);
         $nominal = static::toNumber($nominal);
+        $bunga = static::toNumber($bunga);
         $denda = static::toNumber($denda);
 
-        $bungaPersen = $kredit ? (float) ($kredit->bunga_persen ?? 0) : 0;
-        $minimalBunga = static::roundUpHundreds($saldo * $bungaPersen / 100);
-
-        $bunga = static::toNumber($bunga);
-
-        if ($bunga < $minimalBunga) $bunga = $minimalBunga;
-        if ($nominal > 0 && $bunga > $nominal) $bunga = $nominal;
-
-        $bunga = static::roundUpHundreds($bunga);
+        if ($bunga > $nominal) {
+            $bunga = $nominal;
+        }
 
         $pokok = max($nominal - $bunga - $denda, 0);
         $sisa = max($saldo - $pokok, 0);
@@ -87,26 +82,35 @@ class TransaksiKreditBulananResource extends Resource
                 ->schema([
                     Grid::make(4)->schema([
                         Select::make('kredit_bulanan_id')
-                        ->label('No Pokok')
-                        ->options(function () {
-                            return KreditBulanan::with('member')
-                                ->get()
-                                ->mapWithKeys(function ($item) {
-                                    $nama = $item->member->nama_lengkap ?? '-';
-                                    return [$item->id => $item->no_pokok . ' - ' . $nama];
-                                })
-                                ->toArray();
-                        })
-                        ->searchable()
-                        ->required()
-                        ->live(onBlur: true)
-                        ->afterStateUpdated(function ($state, $set) {
-                            $kredit = KreditBulanan::find($state);
-                            $saldo = $kredit?->getSisaSaldo() ?? 0;
+                            ->label('No Pokok')
+                            ->options(function () {
+                                return KreditBulanan::with('member')
+                                    ->get()
+                                    ->mapWithKeys(function ($item) {
+                                        $nama = $item->member->nama_lengkap ?? '-';
+                                        return [$item->id => $item->no_pokok . ' - ' . $nama];
+                                    })
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, $set, $get) {
+                                $kredit = KreditBulanan::find($state);
+                                $saldo = $kredit?->getSisaSaldo() ?? 0;
 
-                            $set('saldo_awal', $saldo);
-                            $set('sisa_saldo', $saldo);
-                        }),
+                                [$bunga, $pokok, $sisa] = static::calculate(
+                                    $kredit,
+                                    $saldo,
+                                    $get('nominal_bayar'),
+                                    $get('bunga'),
+                                    $get('denda'),
+                                );
+
+                                $set('saldo_awal', $saldo);
+                                $set('pokok', $pokok);
+                                $set('sisa_saldo', $sisa);
+                            }),
 
                         TextInput::make('nominal_bayar')
                             ->label('Nominal')
@@ -125,7 +129,6 @@ class TransaksiKreditBulananResource extends Resource
                                     $get('denda'),
                                 );
 
-                                $set('bunga', $bunga);
                                 $set('pokok', $pokok);
                                 $set('sisa_saldo', $sisa);
                             }),
@@ -134,7 +137,18 @@ class TransaksiKreditBulananResource extends Resource
                             ->label('Bunga')
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters([',', '.'])
+                            ->default(0)
                             ->live(onBlur: true)
+                            ->rule(function (callable $get) {
+                                return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    $nominalBayar = static::toNumber($get('nominal_bayar'));
+                                    $bunga = static::toNumber($value);
+
+                                    if ($bunga > $nominalBayar) {
+                                        $fail('Bunga tidak boleh lebih besar dari nominal bayar.');
+                                    }
+                                };
+                            })
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $kredit = KreditBulanan::find($get('kredit_bulanan_id'));
 
@@ -146,7 +160,6 @@ class TransaksiKreditBulananResource extends Resource
                                     $get('denda'),
                                 );
 
-                                $set('bunga', $bunga);
                                 $set('pokok', $pokok);
                                 $set('sisa_saldo', $sisa);
                             }),
