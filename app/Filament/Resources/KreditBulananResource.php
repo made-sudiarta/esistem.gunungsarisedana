@@ -22,6 +22,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\Radio;
 use App\Filament\Resources\KreditBulananResource\Widgets\KreditBulananStats;
 use Filament\Support\RawJs;
 
@@ -133,55 +134,165 @@ class KreditBulananResource extends Resource
         return $form
             ->schema([
                 Section::make('Data Peminjam')
-                    ->schema([
-                        Select::make('member_id')
-                            ->relationship('member', 'nama_lengkap')
-                            ->label('Anggota')
-                            ->searchable()
-                            ->preload()
-                            ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $set('group_id', null);
-                            }),
+                ->schema([
+                    Select::make('member_id')
+                        ->relationship('member', 'nama_lengkap')
+                        ->label('Anggota')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            $set('group_id', null);
 
-                        Select::make('group_id')
-                            ->label('Group / Kolektor')
-                            ->relationship('group', 'group')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
-                    ])
-                    ->columns(2),
+                            $sumber = $get('penanggungJawab.sumber_penanggung_jawab') ?? 'anggota_sama';
+
+                            if ($sumber !== 'anggota_sama') {
+                                return;
+                            }
+
+                            $member = \App\Models\Member::find($state);
+
+                            if (! $member) {
+                                return;
+                            }
+
+                            $set('penanggungJawab.nik', $member->nik);
+                            $set('penanggungJawab.nama', $member->nama_lengkap);
+                            $set('penanggungJawab.tempat_lahir', $member->tempat_lahir);
+                            $set('penanggungJawab.tanggal_lahir', $member->tanggal_lahir);
+                            $set('penanggungJawab.no_hp', $member->no_hp);
+                            $set('penanggungJawab.alamat', $member->alamat);
+                            $set('penanggungJawab.pekerjaan', $member->pekerjaan ?? null);
+                        }),
+
+                    Select::make('group_id')
+                        ->label('Group / Kolektor')
+                        ->relationship('group', 'group')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                ])
+                ->columns(2),
 
                 Section::make('Data Penanggung Jawab')
                     ->relationship('penanggungJawab')
                     ->schema([
+                        Radio::make('sumber_penanggung_jawab')
+                            ->label('Sumber Data')
+                            ->options([
+                                'anggota_sama' => 'Sama dengan Anggota Peminjam',
+                                'anggota_lain' => 'Pilih Anggota Lain',
+                                'manual' => 'Input Manual',
+                            ])
+                            ->default('anggota_sama')
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                if ($state === 'manual') {
+                                    return;
+                                }
+
+                                $memberId = null;
+
+                                if ($state === 'anggota_sama') {
+                                    $memberId = $get('../../member_id');
+                                }
+
+                                if ($state === 'anggota_lain') {
+                                    $memberId = $get('member_penanggung_jawab_id');
+                                }
+
+                                if (! $memberId) {
+                                    return;
+                                }
+
+                                $member = \App\Models\Member::find($memberId);
+
+                                if (! $member) {
+                                    return;
+                                }
+
+                                $set('nik', $member->nik);
+                                $set('nama', $member->nama_lengkap);
+                                $set('tempat_lahir', $member->tempat_lahir);
+                                $set('tanggal_lahir', $member->tanggal_lahir);
+                                $set('no_hp', $member->no_hp);
+                                $set('alamat', $member->alamat);
+                                $set('pekerjaan', $member->pekerjaan ?? null);
+                            })
+                            ->columnSpanFull(),
+
+                        Select::make('member_penanggung_jawab_id')
+                            ->label('Pilih Anggota Penanggung Jawab')
+                            ->options(function () {
+                                return \App\Models\Member::query()
+                                    ->orderBy('nama_lengkap')
+                                    ->pluck('nama_lengkap', 'id')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn ($get) => $get('sumber_penanggung_jawab') === 'anggota_lain')
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                if ($get('sumber_penanggung_jawab') !== 'anggota_lain') {
+                                    return;
+                                }
+
+                                if (! $state) {
+                                    return;
+                                }
+
+                                $member = \App\Models\Member::find($state);
+
+                                if (! $member) {
+                                    return;
+                                }
+
+                                $set('nik', $member->nik);
+                                $set('nama', $member->nama_lengkap);
+                                $set('tempat_lahir', $member->tempat_lahir);
+                                $set('tanggal_lahir', $member->tanggal_lahir);
+                                $set('no_hp', $member->no_hp);
+                                $set('alamat', $member->alamat);
+                                $set('pekerjaan', $member->pekerjaan ?? null);
+                            })
+                            ->columnSpanFull(),
+
                         TextInput::make('nik')
                             ->label('NIK')
-                            ->maxLength(50),
+                            ->maxLength(50)
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         TextInput::make('nama')
                             ->label('Nama')
-                            ->required(),
+                            ->required()
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         TextInput::make('tempat_lahir')
-                            ->label('Tempat Lahir'),
+                            ->label('Tempat Lahir')
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         DatePicker::make('tanggal_lahir')
-                            ->label('Tanggal Lahir'),
+                            ->label('Tanggal Lahir')
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         TextInput::make('pekerjaan')
-                            ->label('Pekerjaan'),
+                            ->label('Pekerjaan')
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         TextInput::make('no_hp')
                             ->label('No HP')
-                            ->tel(),
+                            ->tel()
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
 
                         Textarea::make('alamat')
                             ->label('Alamat')
                             ->rows(3)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->readOnly(fn ($get) => in_array($get('sumber_penanggung_jawab'), ['anggota_sama', 'anggota_lain'])),
                     ])
                     ->columns(2),
 
@@ -373,6 +484,7 @@ class KreditBulananResource extends Resource
 
                                         Textarea::make('tempat_penyimpanan')
                                             ->label('Tempat Penyimpanan')
+                                            ->default('KSP. Gunung Sari Sedana')
                                             ->rows(2)
                                             ->columnSpanFull(),
                                     ])
