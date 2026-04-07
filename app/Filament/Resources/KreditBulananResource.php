@@ -61,6 +61,7 @@ class KreditBulananResource extends Resource
 
         return $field;
     }
+    
     public static function getWidgets(): array
     {
         return [
@@ -120,7 +121,7 @@ class KreditBulananResource extends Resource
         $nominalPersen = $plafond * ($adm + $provisi + $op) / 100;
         $totalTagihan = $nominalPersen + $materai + $kyd + $asuransi + $lain;
         $angsuranPerBulan = $jangkaWaktu > 0
-            ? ceil((($plafond * $bunga / 100) + ($plafond / $jangkaWaktu)) / 1000) * 1000
+            ? ceil((($plafond * $bunga / 100) + ($plafond / $jangkaWaktu)) / 100) * 100
             : 0;
 
         $set('total_tagihan', round($totalTagihan, 0));
@@ -444,19 +445,19 @@ class KreditBulananResource extends Resource
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
-                TextColumn::make('plafond')
-                    ->label('Plafond')
-                    ->money('idr', true)
-                    ->sortable()
-                    ->color(fn ($record) => static::rowColor($record))
-                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                // TextColumn::make('plafond')
+                //     ->label('Plafond')
+                //     ->money('idr', true)
+                //     ->sortable()
+                //     ->color(fn ($record) => static::rowColor($record))
+                //     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
-                TextColumn::make('tanggal_pengajuan')
-                    ->label('Tanggal Pengajuan')
-                    ->date()
-                    ->sortable()
-                    ->color(fn ($record) => static::rowColor($record))
-                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+                // TextColumn::make('tanggal_pengajuan')
+                //     ->label('Tanggal Pengajuan')
+                //     ->date()
+                //     ->sortable()
+                //     ->color(fn ($record) => static::rowColor($record))
+                //     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
 
                 TextColumn::make('tanggal_jatuh_tempo')
                     ->label('Jatuh Tempo')
@@ -472,6 +473,27 @@ class KreditBulananResource extends Resource
                     ->sortable()
                     ->color(fn ($record) => static::rowColor($record))
                     ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+
+                TextColumn::make('bunga_bulan_ini')
+                    ->label('Bunga Bulan Ini')
+                    ->money('idr', true)
+                    ->getStateUsing(function ($record) {
+                        $sisa = (float) $record->getSisaSaldo();
+                        $persen = (float) ($record->bunga_persen ?? 0);
+
+                        $bunga = ($sisa * $persen) / 100;
+
+                        return ceil($bunga / 100) * 100; // pembulatan ke atas ribuan
+                    })
+                    ->color(fn ($record) => static::rowColor($record))
+                    ->weight(fn ($record) => static::rowColor($record) ? 'medium' : 'normal'),
+
+                TextColumn::make('jumlah_tunggakan')
+                    ->label('Tunggakan')
+                    ->getStateUsing(fn ($record) => $record->jumlah_tunggakan)
+                    ->suffix(' x')
+                    ->badge()
+                    ->color(fn ($record) => $record->jumlah_tunggakan > 0 ? 'danger' : 'success'),
 
                 TextColumn::make('status')
                     ->label('Status')

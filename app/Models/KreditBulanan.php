@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 
 class KreditBulanan extends Model
 {
@@ -72,6 +73,39 @@ class KreditBulanan extends Model
     public function transaksis(): HasMany
     {
         return $this->hasMany(TransaksiKreditBulanan::class, 'kredit_bulanan_id');
+    }
+
+    public function getJumlahTunggakanAttribute(): int
+    {
+        if ($this->status === 'lunas') {
+            return 0;
+        }
+
+        $today = now();
+
+        if (! $this->tanggal_jatuh_tempo || Carbon::parse($this->tanggal_pengajuan)->greaterThan($today)) {
+            return 0;
+        }
+
+        $currentMonth = $today->copy()->startOfMonth();
+
+        $lastTransactionDate = $this->transaksis()
+            ->latest('tanggal_transaksi')
+            ->value('tanggal_transaksi');
+
+        if ($lastTransactionDate) {
+            $lastMonth = Carbon::parse($lastTransactionDate)->startOfMonth();
+
+            return $lastMonth->greaterThanOrEqualTo($currentMonth)
+                ? 0
+                : $lastMonth->diffInMonths($currentMonth);
+        }
+
+        $startMonth = Carbon::parse($this->tanggal_pengajuan)->startOfMonth();
+
+        return $startMonth->greaterThanOrEqualTo($currentMonth)
+            ? 0
+            : $startMonth->diffInMonths($currentMonth);
     }
 
     public function hitungTotalTagihan(): float
