@@ -136,7 +136,7 @@ class TransaksiKreditBulananResource extends Resource
                 ->schema([
                     Section::make('Ringkasan Pinjaman')
                         ->schema([
-                            Grid::make(4)->schema([
+                            Grid::make(5)->schema([
                                 Placeholder::make('info_sisa_pokok')
                                     ->label('Sisa Pokok')
                                     ->content(fn ($get) => 'Rp ' . number_format((float) ($get('sisa_pokok_info') ?? 0), 0, ',', '.')),
@@ -146,19 +146,27 @@ class TransaksiKreditBulananResource extends Resource
                                     ->content(fn ($get) => 'Rp ' . number_format((float) ($get('bunga_bulan_ini_info') ?? 0), 0, ',', '.')),
 
                                 Placeholder::make('info_tunggakan_bulan')
-                                    ->label('Tunggakan Bulan')
+                                    ->label('Tunggakan')
                                     ->content(fn ($get) => ((int) ($get('tunggakan_bulan_info') ?? 0)) . ' x'),
+                                Placeholder::make('info_sisa_tunggakan_bunga')
+                                    ->label('Sisa Tunggakan Bunga')
+                                    ->content(fn ($get) => 'Rp ' . number_format((float) ($get('sisa_tunggakan_bunga_info') ?? 0), 0, ',', '.')),
+
+                                // Placeholder::make('info_total_kewajiban_bunga')
+                                //     ->label('Total Kewajiban Bunga')
+                                //     ->content(fn ($get) => 'Rp ' . number_format((float) ($get('total_kewajiban_bunga_info') ?? 0), 0, ',', '.')),
                                 Placeholder::make('info_total_bunga_tunggak')
-                                    ->label('Total Bunga Ditunggak')
+                                    ->label('Total Bunga')
                                     ->content(function ($get) {
                                         $bunga = (float) ($get('bunga_bulan_ini_info') ?? 0);
                                         $tunggakan = (int) ($get('tunggakan_bulan_info') ?? 0);
+                                        $sisa = (float) ($get('sisa_tunggakan_bunga_info') ?? 0);
 
                                         if ($tunggakan === 0) {
                                             return 'Rp 0';
                                         }
 
-                                        return 'Rp ' . number_format($bunga * $tunggakan, 0, ',', '.');
+                                        return 'Rp ' . number_format(($bunga * $tunggakan)+$sisa, 0, ',', '.');
                                     }),
                             ]),
                             
@@ -185,8 +193,10 @@ class TransaksiKreditBulananResource extends Resource
                                 $kredit = KreditBulanan::find($state);
 
                                 $saldo = $kredit?->getSisaSaldo() ?? 0;
-                                $bungaBulanIni = static::calculateBungaBulanIni($kredit);
+                                $bungaBulanIni = $kredit?->getBungaTagihanBulanIni() ?? 0;
                                 $tunggakanBulan = static::calculateTunggakan($kredit);
+                                $sisaTunggakanBunga = (float) ($kredit?->sisa_tunggakan_bunga ?? 0);
+                                $totalKewajibanBunga = $sisaTunggakanBunga + $bungaBulanIni;
 
                                 [$bunga, $pokok, $sisa] = static::calculate(
                                     $kredit,
@@ -200,6 +210,8 @@ class TransaksiKreditBulananResource extends Resource
                                 $set('sisa_pokok_info', $saldo);
                                 $set('bunga_bulan_ini_info', $bungaBulanIni);
                                 $set('tunggakan_bulan_info', $tunggakanBulan);
+                                $set('sisa_tunggakan_bunga_info', $sisaTunggakanBunga);
+                                $set('total_kewajiban_bunga_info', $totalKewajibanBunga);
                                 $set('pokok', $pokok);
                                 $set('sisa_saldo', $sisa);
                             })->columnSpan(2),
@@ -302,6 +314,13 @@ class TransaksiKreditBulananResource extends Resource
                         ->dehydrated(false),
 
                     TextInput::make('bunga_bulan_ini_info')
+                        ->hidden()
+                        ->dehydrated(false),
+                    TextInput::make('sisa_tunggakan_bunga_info')
+                        ->hidden()
+                        ->dehydrated(false),
+
+                    TextInput::make('total_kewajiban_bunga_info')
                         ->hidden()
                         ->dehydrated(false),
 

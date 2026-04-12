@@ -34,6 +34,7 @@ class KreditBulanan extends Model
         'biaya_lain',
         'keterangan_biaya_lain',
         'status',
+        'sisa_tunggakan_bunga',
     ];
 
     protected $casts = [
@@ -48,6 +49,7 @@ class KreditBulanan extends Model
         'biaya_materai' => 'decimal:2',
         'biaya_asuransi' => 'decimal:2',
         'biaya_lain' => 'decimal:2',
+        'sisa_tunggakan_bunga' => 'decimal:2',
     ];
 
     public function member(): BelongsTo
@@ -108,6 +110,85 @@ class KreditBulanan extends Model
             : $startMonth->diffInMonths($currentMonth);
     }
 
+    public function getBungaBulananAttribute(): float
+    {
+        $sisa = (float) $this->getSisaSaldo();
+        $persen = (float) ($this->bunga_persen ?? 0);
+
+        $bunga = ($sisa * $persen) / 100;
+
+        return ceil($bunga / 100) * 100;
+    }
+    public function getBungaTagihanBulanIni(): float
+    {
+        if ($this->status === 'lunas') {
+            return 0;
+        }
+
+        $bulanIni = now()->startOfMonth();
+
+        $sudahBayarBulanIni = $this->transaksis()
+            ->whereDate('tanggal_transaksi', '>=', $bulanIni)
+            ->exists();
+
+        if ($sudahBayarBulanIni) {
+            return 0;
+        }
+
+        $sisaPokok = (float) $this->getSisaSaldo();
+        $bungaPersen = (float) ($this->bunga_persen ?? 0);
+
+        $bunga = ($sisaPokok * $bungaPersen) / 100;
+
+        return ceil($bunga / 100) * 100;
+    }
+    public function updateSisaTunggakanBungaDariPembayaran(float $bayarBunga): void
+    {
+        $bayarBunga = max($bayarBunga, 0);
+
+        $sisaLama = (float) ($this->sisa_tunggakan_bunga ?? 0);
+        $bungaBulanIni = (float) $this->getBungaTagihanBulanIni();
+
+        $totalKewajibanBunga = $sisaLama + $bungaBulanIni;
+
+        $sisaBaru = max($totalKewajibanBunga - $bayarBunga, 0);
+
+        $this->update([
+            'sisa_tunggakan_bunga' => $sisaBaru,
+        ]);
+    }
+    public function getBungaPerBulanTagihan(): float
+    {
+        $sisaPokok = (float) $this->getSisaSaldo();
+        $bungaPersen = (float) ($this->bunga_persen ?? 0);
+
+        $bunga = ($sisaPokok * $bungaPersen) / 100;
+
+        return ceil($bunga / 100) * 100;
+    }
+    public function hitungTotalKewajibanBungaSebelumTransaksi(bool $includeBungaBulanIni = false): float
+    {
+        $sisaLama = (float) ($this->sisa_tunggakan_bunga ?? 0);
+        $jumlahTunggakan = (int) ($this->jumlah_tunggakan ?? 0);
+        $bungaPerBulan = (float) $this->getBungaPerBulanTagihan();
+
+        $total = $sisaLama + ($jumlahTunggakan * $bungaPerBulan);
+
+        if ($includeBungaBulanIni) {
+            $total += $bungaPerBulan;
+        }
+
+        return $total;
+    }
+    public function getBungaBulanan(): float
+    {
+        $sisa = (float) $this->getSisaSaldo();
+        $persen = (float) ($this->bunga_persen ?? 0);
+
+        $bunga = ($sisa * $persen) / 100;
+
+        return ceil($bunga / 100) * 100;
+    }
     public function hitungTotalTagihan(): float
     {
         $plafond = (float) $this->plafond;

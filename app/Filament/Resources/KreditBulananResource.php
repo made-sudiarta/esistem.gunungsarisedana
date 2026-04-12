@@ -420,6 +420,15 @@ class KreditBulananResource extends Resource
                             ->dehydrated(true)
                             ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 0, ',', '.') : null)
                             ->dehydrateStateUsing(fn ($state) => static::toNumber($state)),
+                       
+                        TextInput::make('sisa_tunggakan_bunga')
+                            ->label('Sisa Tunggakan Bunga')
+                            ->prefix('Rp')
+                            ->readOnly()
+                            ->default(0)
+                            ->dehydrated(true)
+                            ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 0, ',', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => static::toNumber($state)),
 
                         Select::make('status')
                             ->label('Status')
@@ -607,6 +616,13 @@ class KreditBulananResource extends Resource
                     ->badge()
                     ->color(fn ($record) => $record->jumlah_tunggakan > 0 ? 'danger' : 'success'),
 
+                TextColumn::make('sisa_tunggakan_bunga')
+                    ->label('Sisa Tunggakan Bunga')
+                    ->money('idr', true)
+                    ->badge()
+                    ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success'),
+                
+                    
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -653,12 +669,40 @@ class KreditBulananResource extends Resource
 
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn () => Filament::auth()->user()?->hasRole('super_admin')),
+
+                Tables\Actions\Action::make('setSisaTunggakanBunga')
+                    ->label('Sisa Tunggakan')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('warning')
+                    ->visible(fn ($record) =>
+                        Filament::auth()->user()?->hasRole('super_admin')
+                        && $record->transaksis()->exists()
+                    )
+                    ->form([
+                        TextInput::make('sisa_tunggakan_bunga')
+                            ->label('Sisa Tunggakan Bunga')
+                            ->prefix('Rp')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters([',', '.'])
+                            ->default(fn ($record) => (float) ($record->sisa_tunggakan_bunga ?? 0))
+                            ->required(),
+
+                    ])
+                    ->action(function (array $data, $record): void {
+                        $record->update([
+                            'sisa_tunggakan_bunga' => static::toNumber($data['sisa_tunggakan_bunga'] ?? 0),
+                        ]);
+                    })
+                    ->modalHeading('Set Sisa Tunggakan Bunga')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->successNotificationTitle('Sisa tunggakan bunga berhasil diperbarui'),
+
                 Tables\Actions\Action::make('akad')
-                ->label('Akad')
-                ->icon('heroicon-o-document-text')
-                ->color('success')
-                ->url(fn ($record) => route('kredit-bulanan.akad-pdf', ['record' => $record]))
-                ->openUrlInNewTab(),
+                    ->label('Akad')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn ($record) => route('kredit-bulanan.akad-pdf', ['record' => $record]))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
