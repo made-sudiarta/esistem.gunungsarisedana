@@ -116,7 +116,8 @@
         $kredit = $surat->kreditBulanan;
         $member = $kredit?->member;
         $group = $kredit?->group;
-        $petugas = "I Wayan Wartawan";
+        $petugas = "I Putu Agus Indrawan";
+        $ketua = "I Made Sudiarta, S.Kom";
 
         $jenisSpLabel = match($surat->jenis_sp) {
             'SP1' => 'SURAT PERINGATAN I',
@@ -274,16 +275,20 @@
     </div>
 
     <table class="signature-table">
-        <tr>
-            <td></td>
-            <td class="text-center">
-                <div class="mb-1">Hormat kami,</div>
-                <div class="fw-bold">Kepala Bagian Kredit</div>
-                <div class="ttd-space"></div>
-                <div class="fw-bold underline">({{ $petugas }})</div>
-                <!-- <div class="small-note">Petugas / Pengurus</div> -->
-            </td>
-        </tr>
-    </table>
+    <tr>
+        <td class="text-center">
+            <div class="mb-1">Mengetahui,</div>
+            <div class="fw-bold">Ketua</div>
+            <div class="ttd-space"></div>
+            <div class="fw-bold underline">({{ $ketua }})</div>
+        </td>
+        <td class="text-center">
+            <div class="mb-1">Hormat kami,</div>
+            <div class="fw-bold">Adm. Bagian Kredit</div>
+            <div class="ttd-space"></div>
+            <div class="fw-bold underline">({{ $petugas }})</div>
+        </td>
+    </tr>
+</table>
 </body>
 </html>
