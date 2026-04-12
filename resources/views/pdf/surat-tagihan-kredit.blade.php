@@ -166,7 +166,7 @@
     <div class="header-line" style="margin-bottom:0px;"></div>
 
     <div class="text-right mb-1">
-        Gunung Sari, {{ $tanggalSurat }}
+        Denpasar, {{ $tanggalSurat }}
     </div>
 
     <table class="detail-table" style="margin-top:-25px;">
@@ -277,7 +277,7 @@
         <tr>
             <td></td>
             <td class="text-center">
-                <div class="mb-8">Hormat kami,</div>
+                <div class="mb-1">Hormat kami,</div>
                 <div class="fw-bold">Kepala Bagian Kredit</div>
                 <div class="ttd-space"></div>
                 <div class="fw-bold underline">({{ $petugas }})</div>
