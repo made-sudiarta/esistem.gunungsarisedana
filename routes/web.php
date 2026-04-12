@@ -7,6 +7,7 @@ use App\Http\Controllers\CetakMemberController;
 use App\Http\Controllers\PrintSimpananBerjangkaController;
 use App\Http\Controllers\KreditHarianPrintController;
 use App\Http\Controllers\KreditBulananPdfController;
+use App\Http\Controllers\SuratTagihanKreditPdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,4 +61,5 @@ Route::get('/kredit-harian/{record}/akad-pdf', [KreditHarianPrintController::cla
     ->name('kredit-harian.akad-pdf');
 Route::get('/kredit-bulanan/{record}/akad-pdf', [KreditBulananPdfController::class, 'akad'])
     ->name('kredit-bulanan.akad-pdf');
-    
+Route::get('/surat-tagihan-kredit/{record}/pdf', [SuratTagihanKreditPdfController::class, 'show'])
+    ->name('surat-tagihan-kredit.pdf');
