@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Master;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -13,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 
 class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
 {
@@ -29,6 +31,10 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
         'lg' => 2,
         'xl' => 2,
     ];
+
+    public ?float $latitudeKeluar = null;
+
+    public ?float $longitudeKeluar = null;
 
     public static function canView(): bool
     {
@@ -85,66 +91,150 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
         return round($jumlahMenit / 60, 2);
     }
 
+    private function hitungJarakMeter(
+        float $lat1,
+        float $lng1,
+        float $lat2,
+        float $lng2
+    ): float {
+        $earthRadius = 6371000;
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
+    private function validasiLokasiKantor(float $latitude, float $longitude): array
+    {
+        $officeLat = (float) Master::getValue('absensi', 'kantor_latitude');
+        $officeLng = (float) Master::getValue('absensi', 'kantor_longitude');
+        $allowedRadius = (int) Master::getValue('absensi', 'radius_meter', 100);
+
+        if (! $officeLat || ! $officeLng) {
+            return [
+                'valid' => false,
+                'jarak' => null,
+                'message' => 'Lokasi kantor belum diatur.',
+            ];
+        }
+
+        $jarak = $this->hitungJarakMeter(
+            $officeLat,
+            $officeLng,
+            $latitude,
+            $longitude
+        );
+
+        return [
+            'valid' => $jarak <= $allowedRadius,
+            'jarak' => round($jarak),
+            'message' => null,
+        ];
+    }
+
+    #[On('absen-masuk-dengan-lokasi')]
+    public function absenMasukDenganLokasi(float $latitude, float $longitude): void
+    {
+        $lokasi = $this->validasiLokasiKantor($latitude, $longitude);
+
+        if (! $lokasi['valid']) {
+            Notification::make()
+                ->title('Lokasi di luar area kantor.')
+                ->body(
+                    $lokasi['message']
+                        ?? 'Jarak Anda sekitar ' . $lokasi['jarak'] . ' meter dari kantor.'
+                )
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $today = today()->toDateString();
+        $userId = Auth::id();
+
+        $jamMasukTercatat = $this->getJamMasukTercatat();
+        $jamMasuk = $jamMasukTercatat->format('H:i:s');
+
+        $absensi = DB::table('absensis')
+            ->whereNull('deleted_at')
+            ->where('user_id', $userId)
+            ->where('tanggal', $today)
+            ->first();
+
+        if ($absensi && $absensi->jam_masuk) {
+            Notification::make()
+                ->title('Anda sudah absen masuk hari ini.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        if ($absensi) {
+            DB::table('absensis')
+                ->where('id', $absensi->id)
+                ->update([
+                    'jam_masuk' => $jamMasuk,
+                    'latitude_masuk' => $latitude,
+                    'longitude_masuk' => $longitude,
+                    'jarak_masuk' => $lokasi['jarak'],
+                    'sumber_absen' => 'widget_kolektor',
+                    'updated_at' => now(),
+                ]);
+        } else {
+            DB::table('absensis')->insert([
+                'user_id' => $userId,
+                'tanggal' => $today,
+                'jam_masuk' => $jamMasuk,
+                'jam_keluar' => null,
+                'jumlah_jam' => 0,
+                'jumlah_setoran' => 0,
+                'penarikan' => 0,
+                'latitude_masuk' => $latitude,
+                'longitude_masuk' => $longitude,
+                'jarak_masuk' => $lokasi['jarak'],
+                'latitude_keluar' => null,
+                'longitude_keluar' => null,
+                'jarak_keluar' => null,
+                'sumber_absen' => 'widget_kolektor',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        Notification::make()
+            ->title('Absen masuk berhasil.')
+            ->body('Jam masuk tercatat: ' . $jamMasuk . '. Jarak dari kantor: ' . $lokasi['jarak'] . ' meter.')
+            ->success()
+            ->send();
+
+        $this->dispatch('$refresh');
+    }
+
+    #[On('set-lokasi-keluar')]
+    public function setLokasiKeluar(float $latitude, float $longitude): void
+    {
+        $this->latitudeKeluar = $latitude;
+        $this->longitudeKeluar = $longitude;
+
+        $this->mountAction('absenKeluar');
+    }
+
     public function absenMasukAction(): Action
     {
         return Action::make('absenMasuk')
             ->label('Absen Masuk')
             ->icon('heroicon-m-arrow-right-on-rectangle')
-            ->color('success')
-            ->requiresConfirmation()
-            ->modalHeading('Konfirmasi Absen Masuk')
-            ->modalDescription('Apakah Anda yakin ingin melakukan absen masuk hari ini?')
-            ->modalSubmitActionLabel('Ya, Absen Masuk')
-            ->disabled(fn (): bool => filled($this->getAbsensiHariIni()?->jam_masuk))
-            ->action(function (): void {
-                $today = today()->toDateString();
-                $userId = Auth::id();
-
-                $jamMasukTercatat = $this->getJamMasukTercatat();
-                $jamMasuk = $jamMasukTercatat->format('H:i:s');
-
-                $absensi = DB::table('absensis')
-                    ->whereNull('deleted_at')
-                    ->where('user_id', $userId)
-                    ->where('tanggal', $today)
-                    ->first();
-
-                if ($absensi && $absensi->jam_masuk) {
-                    Notification::make()
-                        ->title('Anda sudah absen masuk hari ini.')
-                        ->warning()
-                        ->send();
-
-                    return;
-                }
-
-                if ($absensi) {
-                    DB::table('absensis')
-                        ->where('id', $absensi->id)
-                        ->update([
-                            'jam_masuk' => $jamMasuk,
-                            'updated_at' => now(),
-                        ]);
-                } else {
-                    DB::table('absensis')->insert([
-                        'user_id' => $userId,
-                        'tanggal' => $today,
-                        'jam_masuk' => $jamMasuk,
-                        'jam_keluar' => null,
-                        'jumlah_jam' => 0,
-                        'jumlah_setoran' => 0,
-                        'penarikan' => 0,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-
-                Notification::make()
-                    ->title('Absen masuk berhasil.')
-                    ->body('Jam masuk tercatat: ' . $jamMasuk)
-                    ->success()
-                    ->send();
-            });
+            ->color('primary')
+            ->disabled(fn (): bool => filled($this->getAbsensiHariIni()?->jam_masuk));
     }
 
     public function absenKeluarAction(): Action
@@ -152,7 +242,7 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
         return Action::make('absenKeluar')
             ->label('Absen Keluar')
             ->icon('heroicon-m-arrow-left-on-rectangle')
-            ->color('danger')
+            ->color('warning')
             ->modalHeading('Absen Keluar')
             ->modalSubmitActionLabel('Simpan Absen Keluar')
             ->disabled(fn (): bool => blank($this->getAbsensiHariIni()?->jam_masuk) || filled($this->getAbsensiHariIni()?->jam_keluar))
@@ -172,6 +262,34 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
                     ->default(0),
             ])
             ->action(function (array $data): void {
+                if (! $this->latitudeKeluar || ! $this->longitudeKeluar) {
+                    Notification::make()
+                        ->title('Lokasi belum terbaca.')
+                        ->body('Silakan izinkan akses lokasi lalu coba lagi.')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                $lokasi = $this->validasiLokasiKantor(
+                    $this->latitudeKeluar,
+                    $this->longitudeKeluar
+                );
+
+                if (! $lokasi['valid']) {
+                    Notification::make()
+                        ->title('Lokasi di luar area kantor.')
+                        ->body(
+                            $lokasi['message']
+                                ?? 'Jarak Anda sekitar ' . $lokasi['jarak'] . ' meter dari kantor.'
+                        )
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
                 $today = today()->toDateString();
                 $userId = Auth::id();
 
@@ -211,14 +329,23 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
                         'jumlah_jam' => $jumlahJam,
                         'jumlah_setoran' => $data['jumlah_setoran'] ?? 0,
                         'penarikan' => $data['penarikan'] ?? 0,
+                        'latitude_keluar' => $this->latitudeKeluar,
+                        'longitude_keluar' => $this->longitudeKeluar,
+                        'jarak_keluar' => $lokasi['jarak'],
+                        'sumber_absen' => 'widget_kolektor',
                         'updated_at' => now(),
                     ]);
 
+                $this->latitudeKeluar = null;
+                $this->longitudeKeluar = null;
+
                 Notification::make()
                     ->title('Absen keluar berhasil disimpan.')
-                    ->body('Jam keluar tercatat: ' . $jamKeluar->format('H:i:s') . '. Total jam kerja: ' . $jumlahJam . ' jam')
+                    ->body('Jam keluar tercatat: ' . $jamKeluar->format('H:i:s') . '. Total jam kerja: ' . $jumlahJam . ' jam. Jarak dari kantor: ' . $lokasi['jarak'] . ' meter.')
                     ->success()
                     ->send();
+
+                $this->dispatch('$refresh');
             });
     }
 }
