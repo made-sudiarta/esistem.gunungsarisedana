@@ -31,7 +31,8 @@ class SuratTagihanKreditResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Surat Tagihan Kredit';
-    protected static ?string $navigationGroup = 'Pinjaman';
+    protected static ?string $navigationGroup = 'Pinjaman Bulanan';
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'Surat Tagihan Kredit';
     protected static ?string $pluralModelLabel = 'Surat Tagihan Kredit';

@@ -95,4 +95,10 @@ class ListAbsensis extends ListRecords
                 }),
          ];
     }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\AbsensiResource\Widgets\AbsensiHarianStats::class,
+        ];
+    }
 }

@@ -17,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Enums\ThemeMode;
 
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 
@@ -30,19 +31,29 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
-            ->brandName('E-Sistem Koperasi')
+            ->font('Poppins')
+            // ->brandName('E-Sistem Koperasi')
+            ->brandLogo(fn () => view('filament.admin.logo'))
+            ->brandLogoHeight('2rem')
+            ->defaultThemeMode(ThemeMode::Light)
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::Lime,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(
-                in: app_path('Filament/Widgets'),
-                for: 'App\\Filament\\Widgets'
-            )
+            // ->discoverWidgets(
+            //     in: app_path('Filament/Widgets'),
+            //     for: 'App\\Filament\\Widgets'
+            // )
+            ->widgets([
+                \App\Filament\Widgets\StatistikAnggotaWidget::class,
+                \App\Filament\Widgets\KreditBulananTahunanChart::class,
+                \App\Filament\Widgets\KreditHarianTahunanChart::class,
+                \App\Filament\Widgets\AbsensiKolektorWidget::class,
+            ])
 
             ->renderHook(
                 'panels::head.end',
@@ -79,20 +90,22 @@ class AdminPanelProvider extends PanelProvider
 
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+
                 AuthUIEnhancerPlugin::make()
-                    ->formPanelPosition('right')
-                    ->emptyPanelBackgroundImageUrl('https://images.pexels.com/photos/20237836/pexels-photo-20237836.jpeg')
-                    ->emptyPanelBackgroundImageOpacity('70%')
-                    ->showEmptyPanelOnMobile(false)
-                    // ->formPanelWidth('100%')
+                ->formPanelPosition('right')
+                ->formPanelWidth('50%')
+                ->emptyPanelBackgroundImageUrl(asset('images/auth-illustration.png'))
+                ->emptyPanelBackgroundImageOpacity('100%')
+                ->showEmptyPanelOnMobile(false)
             ])
             ->navigationGroups([
-                'Absensi',
-                'Pinjaman',
-                'Keanggotaan',
+                'Karyawan',
                 'Simpanan Berjangka',
-                'Filament Shield',
+                'Pinjaman Bulanan',
+                'Pinjaman Harian',
+                'Keanggotaan',
                 'Setting',
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 }

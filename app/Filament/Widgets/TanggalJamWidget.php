@@ -10,9 +10,14 @@ class TanggalJamWidget extends Widget
     
     protected static ?int $sort = 1; 
     protected int | string | array $columnSpan = [
-        'default' => 12,
-        'lg' => 6,
-     ];
+
+    'default' => 1,
+
+    'md' => 12,
+    'lg' => 12,
+    'xl' => 12,
+
+];
 
     public function getTimeProperty(): string
     {

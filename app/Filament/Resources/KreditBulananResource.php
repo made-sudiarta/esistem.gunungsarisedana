@@ -32,7 +32,7 @@ class KreditBulananResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pinjaman Bulanan';
-    protected static ?string $navigationGroup = 'Pinjaman';
+    protected static ?string $navigationGroup = 'Pinjaman Bulanan';
 
     protected static ?string $modelLabel = 'Pinjaman Bulanan';
     protected static ?string $pluralModelLabel = 'Pinjaman Bulanan';

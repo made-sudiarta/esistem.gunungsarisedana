@@ -9,13 +9,16 @@ use Filament\Widgets\ChartWidget;
 
 class PinjamanHarianChart extends ChartWidget
 {
-    protected static ?string $heading = 'Grafik Pinjaman Harian';
+    protected static ?string $heading = 'Pinjaman Harian Tahun 2026';
 
     protected int | string | array $columnSpan = [
-        'default' => 12,
-        'md' => 12,
-        'xl' => 12,
-    ];
+
+    'default' => 1,
+    'md' => 12,
+    'lg' => 12,
+    'xl' => 12,
+
+];
 
     protected static ?int $sort = 3;
 
@@ -73,7 +76,7 @@ class PinjamanHarianChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 }
 

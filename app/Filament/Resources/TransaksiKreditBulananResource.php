@@ -27,7 +27,8 @@ class TransaksiKreditBulananResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Transaksi Bulanan';
-    protected static ?string $navigationGroup = 'Pinjaman';
+    protected static ?string $navigationGroup = 'Pinjaman Bulanan';
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'Transaksi Pinjaman Bulanan';
     protected static ?string $pluralModelLabel = 'Transaksi Pinjaman Bulanan';

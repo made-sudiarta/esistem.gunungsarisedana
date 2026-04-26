@@ -26,7 +26,7 @@ class AbsensiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Absensi Karyawan';
-    protected static ?string $navigationGroup = 'Absensi';
+    protected static ?string $navigationGroup = 'Karyawan';
 
     protected static ?string $modelLabel = 'Absensi Karyawan';
     protected static ?string $pluralModelLabel = 'Absensi Karyawan';
@@ -339,6 +339,12 @@ class AbsensiResource extends Resource
             'index' => Pages\ListAbsensis::route('/'),
             'create' => Pages\CreateAbsensi::route('/create'),
             'edit' => Pages\EditAbsensi::route('/{record}/edit'),
+        ];
+    }
+    public static function getWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\AbsensiResource\Widgets\AbsensiHarianStats::class,
         ];
     }
 }

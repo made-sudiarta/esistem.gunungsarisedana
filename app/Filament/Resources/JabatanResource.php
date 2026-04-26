@@ -18,7 +18,7 @@ class JabatanResource extends Resource
     protected static ?string $model = Jabatan::class;
 
     protected static ?string $navigationLabel = 'Jabatan';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationGroup = 'Karyawan';
     protected static ?string $navigationIcon = 'heroicon-o-bookmark';
     protected static ?int $navigationSort = 3;
 

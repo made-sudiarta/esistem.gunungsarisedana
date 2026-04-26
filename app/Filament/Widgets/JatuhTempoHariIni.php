@@ -11,10 +11,13 @@ class JatuhTempoHariIni extends Widget
 {
     protected static string $view = 'filament.widgets.jatuh-tempo-hari-ini';
     protected int | string | array $columnSpan = [
-        'default' => 12,
-        'md' => 12,
-        'xl' => 12,
-    ];
+
+    'default' => 1,
+    'md' => 6,
+    'lg' => 6,
+    'xl' => 6,
+
+];
 
     protected static ?int $sort = 4;
     public $size = 'medium';

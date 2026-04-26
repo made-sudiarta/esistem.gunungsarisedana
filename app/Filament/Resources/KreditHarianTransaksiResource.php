@@ -26,7 +26,7 @@ class KreditHarianTransaksiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Transaksi Harian';
-    protected static ?string $navigationGroup = 'Pinjaman';
+    protected static ?string $navigationGroup = 'Pinjaman Harian';
 
     protected static ?string $modelLabel = 'Transaksi Pinjaman Harian';
     protected static ?string $pluralModelLabel = 'Transaksi Pinjaman Harian';
