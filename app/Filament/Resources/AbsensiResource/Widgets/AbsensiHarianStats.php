@@ -6,8 +6,14 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Auth;
+
 class AbsensiHarianStats extends BaseWidget
 {
+    public static function canView(): bool
+    {
+        return Auth::user()?->hasRole('super_admin') ?? false;
+    }
     protected function getStats(): array
     {
         $today = today();

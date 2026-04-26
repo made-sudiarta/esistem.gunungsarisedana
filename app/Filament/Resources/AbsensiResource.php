@@ -344,6 +344,7 @@ class AbsensiResource extends Resource
     public static function getWidgets(): array
     {
         return [
+            \App\Filament\Resources\AbsensiResource\Widgets\AbsensiKolektorStats::class,
             \App\Filament\Resources\AbsensiResource\Widgets\AbsensiHarianStats::class,
         ];
     }

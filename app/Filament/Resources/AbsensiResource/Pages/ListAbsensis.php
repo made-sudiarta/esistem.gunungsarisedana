@@ -99,6 +99,7 @@ class ListAbsensis extends ListRecords
     {
         return [
             \App\Filament\Resources\AbsensiResource\Widgets\AbsensiHarianStats::class,
+            \App\Filament\Resources\AbsensiResource\Widgets\AbsensiKolektorStats::class,
         ];
     }
 }
