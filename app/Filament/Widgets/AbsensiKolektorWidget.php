@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -12,7 +13,6 @@ use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
 {
@@ -44,6 +44,47 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
             ->first();
     }
 
+    private function getJamMasukTercatat(): Carbon
+    {
+        $jamAktual = now();
+        $batasJamMasuk = today()->setTime(8, 0, 0);
+
+        if ($jamAktual->lt($batasJamMasuk)) {
+            return $batasJamMasuk;
+        }
+
+        return $jamAktual;
+    }
+
+    private function getJamKeluarTercatat(): Carbon
+    {
+        $jamAktual = now();
+
+        $batasAwal = today()->setTime(8, 0, 0);
+        $batasAkhir = today()->setTime(16, 0, 0);
+
+        if ($jamAktual->lt($batasAwal)) {
+            return $batasAwal;
+        }
+
+        if ($jamAktual->gt($batasAkhir)) {
+            return $batasAkhir;
+        }
+
+        return $jamAktual;
+    }
+
+    private function hitungJumlahJamKerja(Carbon $jamMasuk, Carbon $jamKeluar): float
+    {
+        if ($jamKeluar->lessThanOrEqualTo($jamMasuk)) {
+            return 0;
+        }
+
+        $jumlahMenit = $jamMasuk->diffInMinutes($jamKeluar);
+
+        return round($jumlahMenit / 60, 2);
+    }
+
     public function absenMasukAction(): Action
     {
         return Action::make('absenMasuk')
@@ -57,8 +98,10 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
             ->disabled(fn (): bool => filled($this->getAbsensiHariIni()?->jam_masuk))
             ->action(function (): void {
                 $today = today()->toDateString();
-                $now = now()->format('H:i:s');
                 $userId = Auth::id();
+
+                $jamMasukTercatat = $this->getJamMasukTercatat();
+                $jamMasuk = $jamMasukTercatat->format('H:i:s');
 
                 $absensi = DB::table('absensis')
                     ->whereNull('deleted_at')
@@ -79,15 +122,16 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
                     DB::table('absensis')
                         ->where('id', $absensi->id)
                         ->update([
-                            'jam_masuk' => $now,
+                            'jam_masuk' => $jamMasuk,
                             'updated_at' => now(),
                         ]);
                 } else {
                     DB::table('absensis')->insert([
                         'user_id' => $userId,
                         'tanggal' => $today,
-                        'jam_masuk' => $now,
+                        'jam_masuk' => $jamMasuk,
                         'jam_keluar' => null,
+                        'jumlah_jam' => 0,
                         'jumlah_setoran' => 0,
                         'penarikan' => 0,
                         'created_at' => now(),
@@ -97,6 +141,7 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
 
                 Notification::make()
                     ->title('Absen masuk berhasil.')
+                    ->body('Jam masuk tercatat: ' . $jamMasuk)
                     ->success()
                     ->send();
             });
@@ -155,10 +200,9 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
                 }
 
                 $jamMasuk = Carbon::parse($absensi->tanggal . ' ' . $absensi->jam_masuk);
-                $jamKeluar = now();
+                $jamKeluar = $this->getJamKeluarTercatat();
 
-                $jumlahMenit = $jamMasuk->diffInMinutes($jamKeluar);
-                $jumlahJam = round($jumlahMenit / 60, 2);
+                $jumlahJam = $this->hitungJumlahJamKerja($jamMasuk, $jamKeluar);
 
                 DB::table('absensis')
                     ->where('id', $absensi->id)
@@ -172,7 +216,7 @@ class AbsensiKolektorWidget extends Widget implements HasActions, HasForms
 
                 Notification::make()
                     ->title('Absen keluar berhasil disimpan.')
-                    ->body('Total jam kerja: ' . $jumlahJam . ' jam')
+                    ->body('Jam keluar tercatat: ' . $jamKeluar->format('H:i:s') . '. Total jam kerja: ' . $jumlahJam . ' jam')
                     ->success()
                     ->send();
             });
