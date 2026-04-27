@@ -14,7 +14,7 @@ class KreditHarianTahunanChart extends ChartWidget
     }
     protected static ?string $heading = 'Pinjaman Harian';
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 4;
 
     protected int | string | array $columnSpan = [
         'default' => 1,

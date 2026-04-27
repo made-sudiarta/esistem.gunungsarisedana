@@ -53,6 +53,8 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\KreditBulananTahunanChart::class,
                 \App\Filament\Widgets\KreditHarianTahunanChart::class,
                 \App\Filament\Widgets\AbsensiKolektorWidget::class,
+                \App\Filament\Widgets\AbsensiStaffWidget::class,
+                \App\Filament\Widgets\TransaksiSuperAdminWidget::class,
             ])
 
             ->renderHook(

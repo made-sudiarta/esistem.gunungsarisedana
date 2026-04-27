@@ -13,6 +13,8 @@ use App\Filament\Widgets\AbsensiKolektorWidget;
 
 use App\Filament\Widgets\KreditBulananTahunanChart;
 use App\Filament\Widgets\KreditHarianTahunanChart;
+use App\Filament\Widgets\AbsensiStaffWidget;
+use App\Filament\Widgets\TransaksiSuperAdminWidget;
 
 class Dashboard extends BaseDashboard
 {
@@ -37,6 +39,8 @@ class Dashboard extends BaseDashboard
             KreditBulananTahunanChart::class,
             KreditHarianTahunanChart::class,
             AbsensiKolektorWidget::class,
+            AbsensiStaffWidget::class,
+            TransaksiSuperAdminWidget::class,
         ];
     }
 }
