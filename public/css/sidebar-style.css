@@ -1,0 +1,186 @@
+/* =========================
+   LIGHT MODE - Lime
+========================= */
+
+.fi-sidebar {
+    background: linear-gradient(180deg, #f9f9f9 0%, #f0fdf4 45%, #e6f4e6 100%) !important; /* Background lime soft */
+    border-right: 1px solid rgba(0, 171, 85, .14) !important; /* Border lime */
+}
+
+.fi-sidebar-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(0, 171, 85, .12) !important; /* Border lime */
+}
+
+.fi-sidebar .fi-logo,
+.fi-sidebar .fi-sidebar-header,
+.fi-sidebar .fi-sidebar-nav,
+.fi-sidebar .fi-sidebar-group,
+.fi-sidebar .fi-sidebar-group-label,
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-icon,
+.fi-sidebar .fi-sidebar-collapse-button {
+    color: #16a34a !important; /* Lime text color */
+}
+
+.fi-sidebar .fi-sidebar-group-label {
+    color: #2f855a !important; /* Darker lime for group labels */
+    font-weight: 800 !important;
+}
+
+.fi-sidebar .fi-sidebar-item-button {
+    position: relative !important;
+    border-radius: 14px !important;
+    transition: all .15s ease-in-out !important;
+    background: transparent !important;
+}
+
+.fi-sidebar .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-item-button * {
+    color: #333 !important; /* Default dark text color */
+}
+
+.fi-sidebar .fi-sidebar-item-button:hover,
+.fi-sidebar .fi-sidebar-item-button:focus {
+    background: #f0ffee !important;
+    box-shadow: inset 0 0 0 1px rgba(0, 171, 85, .10) !important; /* Lime hover effect */
+}
+
+.fi-sidebar .fi-sidebar-item-button:hover *,
+.fi-sidebar .fi-sidebar-item-button:focus * {
+    color: #333 !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"] {
+    background: #ffffff !important;
+    box-shadow:
+        inset 0 0 0 1px #00be00, /* Lime active border */
+        0 8px 20px #f0ffee !important; /* Lime shadow */
+    padding-left: 1.75rem !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button::before,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"]::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    width: 4px !important;
+    height: 24px !important;
+    transform: translateY(-50%) !important;
+    border-radius: 999px !important;
+    background: #00be00 !important; /* Lime active indicator */
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
+    color: #16a34a !important; /* Lime active label */
+    font-weight: 900 !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-icon {
+    color: #00be00 !important; /* Lime active icon */
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover {
+    background: #ffffff !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover *,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover * {
+    color: #00be00 !important; /* Lime hover active color */
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover .fi-sidebar-item-icon,
+.fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover .fi-sidebar-item-icon {
+    color: #00be00 !important; /* Lime hover active icon */
+}
+
+/* =========================
+   DARK MODE - Lime
+========================= */
+
+.dark .fi-sidebar {
+    background: linear-gradient(180deg, #4b8d29 0%, #7cbd53 45%, #88d178 100%) !important; /* Dark lime gradient */
+    border-right: none !important;
+}
+
+.dark .fi-sidebar-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .12) !important;
+}
+
+.dark .fi-sidebar .fi-logo,
+.dark .fi-sidebar .fi-sidebar-header,
+.dark .fi-sidebar .fi-sidebar-nav,
+.dark .fi-sidebar .fi-sidebar-group,
+.dark .fi-sidebar .fi-sidebar-group-label,
+.dark .fi-sidebar .fi-sidebar-item-label,
+.dark .fi-sidebar .fi-sidebar-item-icon,
+.dark .fi-sidebar .fi-sidebar-collapse-button {
+    color: rgba(255, 255, 255, .88) !important; /* White text for dark mode */
+}
+
+.dark .fi-sidebar .fi-sidebar-group-label {
+    color: rgba(255, 255, 255, .62) !important; /* Lighter white for group labels */
+    font-weight: 800 !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-button,
+.dark .fi-sidebar .fi-sidebar-item-button * {
+    color: rgba(255, 255, 255, .86) !important; /* White text for buttons */
+}
+
+.dark .fi-sidebar .fi-sidebar-item-button:hover,
+.dark .fi-sidebar .fi-sidebar-item-button:focus {
+    background: rgba(15, 23, 42, .22) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13) !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item-button:hover *,
+.dark .fi-sidebar .fi-sidebar-item-button:focus * {
+    color: #ffffff !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"] {
+    background: rgba(255, 255, 255, .16) !important;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 171, 85, .38), /* Lime active border */
+        0 10px 24px rgba(30, 0, 60, .18) !important;
+    padding-left: 1.75rem !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button::before,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"]::before {
+    background: #00be00 !important; /* Lime active indicator */
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
+    color: #ffffff !important; /* White text for active label */
+    font-weight: 900 !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-icon {
+    color: #00be00 !important; /* Lime icon for active item */
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover {
+    background: rgba(255, 255, 255, .18) !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover *,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover * {
+    color: #ffffff !important;
+}
+
+.dark .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button:hover .fi-sidebar-item-icon,
+.dark .fi-sidebar .fi-sidebar-item-button[aria-current="page"]:hover .fi-sidebar-item-icon {
+    color: #00be00 !important; /* Lime hover active icon */
+}

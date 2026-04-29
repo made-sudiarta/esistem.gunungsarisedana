@@ -9,6 +9,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -18,6 +19,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Enums\ThemeMode;
+use Filament\Support\Facades\FilamentAsset;
+use Filament\Pages\Auth\Login;
+use Filament\Support\Assets\Css;
 
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 
@@ -30,11 +34,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // ->login(Login::class)
             ->registration()
             ->font('Poppins')
-            // ->brandName('E-Sistem Koperasi')
-            ->brandLogo(fn () => view('filament.admin.logo'))
+            ->brandName('KSP. Gunung Sari')
+            // ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('2rem')
+            ->sidebarCollapsibleOnDesktop()
             ->defaultThemeMode(ThemeMode::Light)
             ->colors([
                 'primary' => Color::Lime,
@@ -95,7 +101,7 @@ class AdminPanelProvider extends PanelProvider
 
                 AuthUIEnhancerPlugin::make()
                 ->formPanelPosition('right')
-                ->formPanelWidth('50%')
+                ->formPanelWidth('90%')
                 ->emptyPanelBackgroundImageUrl(asset('images/auth-illustration.png'))
                 ->emptyPanelBackgroundImageOpacity('100%')
                 ->showEmptyPanelOnMobile(false)
@@ -109,5 +115,11 @@ class AdminPanelProvider extends PanelProvider
                 'Setting',
             ])
             ->viteTheme('resources/css/filament/admin/theme.css');
+    }
+    public function boot(): void
+    {
+        FilamentAsset::register([
+            Css::make('sidebar-style', asset('css/sidebar-style.css')),
+        ]);
     }
 }
