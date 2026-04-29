@@ -376,6 +376,7 @@ class KreditHarianResource extends Resource
                 ),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()->visible(fn () =>
                     Filament::auth()->user()?->hasRole('super_admin')
                 ),

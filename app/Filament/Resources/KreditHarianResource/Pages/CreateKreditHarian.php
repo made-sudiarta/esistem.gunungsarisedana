@@ -34,4 +34,8 @@ class CreateKreditHarian extends CreateRecord
         return parent::getCancelFormAction()
             ->label('Batalkan');
     }
+     protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

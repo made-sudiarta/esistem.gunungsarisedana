@@ -11,13 +11,6 @@ class ListKreditHarians extends ListRecords
 {
     protected static string $resource = KreditHarianResource::class;
 
-    // protected function getHeaderActions(): array
-    // {
-    //     return [
-    //         Actions\CreateAction::make()->label('Pinjaman Baru')->icon('heroicon-o-plus'),
-    //     ];
-    // }
-
     protected function getHeaderActions(): array
     {
         return [
