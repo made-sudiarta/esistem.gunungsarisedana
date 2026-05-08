@@ -58,7 +58,6 @@ class KreditHarianTransaksiResource extends Resource
 
                     Forms\Components\DateTimePicker::make('tanggal_transaksi')
                         ->default(now())
-                        ->readonly()
                         ->required(),
 
                 ])
