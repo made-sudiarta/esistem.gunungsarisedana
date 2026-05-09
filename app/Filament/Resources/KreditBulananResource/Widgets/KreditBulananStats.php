@@ -43,33 +43,42 @@ class KreditBulananStats extends BaseWidget
         $totalJatuhTempo = $jatuhTempoRecords->sum(function ($record) {
             return (float) $record->getSisaSaldo();
         });
-
+        
+        $totalPinjamanTahunIni = KreditBulanan::whereYear('tanggal_pengajuan', Carbon::now()->year)->sum('plafond');
+        $totalJatuhTempoTahunIni = KreditBulanan::whereYear('tanggal_jatuh_tempo', Carbon::now()->year)->sum('plafond');
         return [
-            Stat::make('Total Pinjaman', $totalPinjaman)
-                ->description('Jumlah pinjaman bulanan')
-                ->icon('heroicon-o-banknotes')
-                ->color('primary'),
-
             Stat::make(
-                'Total Sisa Saldo',
+                'Pinjaman Jatuh Tempo',
+                $jatuhTempoRecords->count() . ' dari ' . $totalPinjaman
+            )
+                ->description('Jumlah pinjaman jatuh tempo')
+                ->icon('heroicon-o-currency-dollar')
+                ->color('danger'),
+            
+            Stat::make(
+                'Total Pinjaman Berjalan',
                 'Rp ' . number_format($totalSisaSaldo, 0, ',', '.')
             )
-                ->description('Outstanding pinjaman')
+                ->description('Pinjaman tahun ' . Carbon::now()->year . ': Rp ' . number_format($totalPinjamanTahunIni, 0, ',', '.'))
                 ->icon('heroicon-o-currency-dollar')
                 ->color('success'),
 
-            Stat::make('Pinjaman Jatuh Tempo', $jatuhTempoRecords->count())
-                ->description('Jumlah pinjaman jatuh tempo')
-                ->icon('heroicon-o-exclamation-triangle')
-                ->color('danger'),
 
             Stat::make(
+
                 'Total Jatuh Tempo',
+
                 'Rp ' . number_format($totalJatuhTempo, 0, ',', '.')
+
             )
-                ->description('Outstanding jatuh tempo')
-                ->icon('heroicon-o-clock')
+
+                ->description('Jatuh tempo tahun ' . Carbon::now()->year . ': Rp ' . number_format($totalJatuhTempoTahunIni, 0, ',', '.'))
+
+                ->icon('heroicon-o-currency-dollar')
+
                 ->color('warning'),
+
         ];
+        
     }
 }
