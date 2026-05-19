@@ -20,7 +20,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Facades\Filament;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
 
 
 use App\Filament\Resources\KreditHarianResource\RelationManagers\TransaksisRelationManager;
@@ -80,141 +82,232 @@ class KreditHarianResource extends Resource
     }
 
     public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                // Baris 1
-                TextInput::make('no_pokok')
-                    ->label('No Pokok')
-                    ->required()
-                    ->columnSpan(1),
+{
+    return $form
+        ->schema([
 
-                Select::make('member_id')
-                    ->relationship('member', 'nama_lengkap')
-                    ->label('Anggota')
-                    ->searchable()
-                    ->required()
-                    ->columnSpan(1),
+            Section::make('Data Peminjam')
+                ->schema([
 
-                Select::make('group_id')
-                    ->label('Kolektor')
-                    ->relationship('group', 'group')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->columnSpan(1),
+                    Grid::make([
+                        'default' => 1,
+                        'md' => 2,
+                        'xl' => 2,
+                    ])->schema([
 
-                TextInput::make('nama_lengkap')
-                    ->label('Nama Lengkap')
-                    ->required()
-                    ->columnSpan(1),
+                        TextInput::make('no_pokok')
+                            ->label('No Pokok')
+                            ->numeric()
+                            ->required()
+                            ->default(function () {
 
-                // Baris 2
-                Textarea::make('alamat')
-                    ->label('Alamat')
-                    ->rows(3)
-                    ->columnSpan(2),
+                                $lastNumber = \App\Models\KreditHarian::query()
+                                    ->latest('no_pokok')
+                                    ->value('no_pokok');
 
-                TextInput::make('no_hp')
-                    ->label('No HP')
-                    ->tel()
-                    ->columnSpan(1),
+                                return $lastNumber ? $lastNumber + 1 : 1;
 
-                // Baris 3
-                DatePicker::make('tanggal_pengajuan')
-                    ->label('Tanggal Pengajuan')
-                    ->default(now())
-                    ->required()
-                    ->columnSpan(1),
+                            })
+                            ->helperText('Nomor pokok otomatis'),
 
-                TextInput::make('jangka_waktu')
-                    ->label('Jangka Waktu (hari)')
-                    ->numeric()
-                    ->required()
-                    ->columnSpan(1),
+                        Select::make('member_id')
+                            ->relationship('member', 'nama_lengkap')
+                            ->label('Anggota')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
 
-                TextInput::make('plafond')
-                    ->label('Plafond')
-                    ->numeric()
-                    ->required()
-                    ->columnSpan(1),
+                                $member = \App\Models\Member::find($state);
 
-                TextInput::make('bunga_persen')
-                    ->label('Bunga (%)')
-                    ->numeric()
-                    ->required()
-                    ->columnSpan(1),
+                                if ($member) {
 
-                TextInput::make('admin_persen')
-                    ->label('Admin (%)')
-                    ->numeric()
-                    ->required()
-                    ->columnSpan(1),
+                                    $set('nama_lengkap', $member->nama_lengkap);
+                                    $set('alamat', $member->alamat);
+                                    $set('no_hp', $member->no_hp);
 
-                TextInput::make('jaminan')
-                    ->label('Jaminan')
-                    ->maxLength(255),
+                                }
 
-                TextInput::make('prov_adm')
-                    ->label('Provisi / Administrasi')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0),
+                            }),
 
-                TextInput::make('materai')
-                    ->label('Materai')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0),
+                        TextInput::make('nama_lengkap')
+                            ->label('Nama Lengkap')
+                            ->disabled()
+                            ->dehydrated()
+                            ->required(),
 
-                TextInput::make('op')
-                    ->label('OP')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0),
+                        TextInput::make('no_hp')
+                            ->label('No HP')
+                            ->disabled()
+                            ->dehydrated(),
 
-                TextInput::make('kyd')
-                    ->label('KYD')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0),
+                    ]),
+                    Textarea::make('alamat')
+                        ->label('Alamat')
+                        ->rows(3)
+                        ->disabled()
+                        ->dehydrated()
+                        ->columnSpanFull(),
+                    ])
+                ->collapsible(),
 
-                TextInput::make('biaya_lain')
-                    ->label('Biaya Lain')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0),
+            Section::make('Data Penanggung Jawab / Kolektor')
+                ->schema([
 
-                Textarea::make('keterangan_biaya_lain')
-                    ->label('Keterangan Biaya Lain')
-                    ->rows(2),
-                TextInput::make('sisa_pokok_preview')
-                    ->label('Total Tagihan (Plafond + Bunga + Admin)')
-                    ->disabled()
-                    ->dehydrated(false) // ⬅️ tidak dikirim ke backend
-                    ->reactive()
-                    ->afterStateHydrated(function ($state, callable $set, callable $get) {
-                        $plafond = $get('plafond') ?? 0;
-                        $bunga = $get('bunga_persen') ?? 0;
-                        $admin = $get('admin_persen') ?? 0;
+                    Grid::make([
+                        'default' => 1,
+                        'md' => 2,
+                        'xl' => 2,
+                    ])->schema([
 
-                        $total = $plafond + ($plafond * ($bunga + $admin) / 100);
-                        $set('sisa_pokok_preview', number_format($total, 2));
-                    })
-                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        $plafond = $get('plafond') ?? 0;
-                        $bunga = $get('bunga_persen') ?? 0;
-                        $admin = $get('admin_persen') ?? 0;
+                        Select::make('group_id')
+                            ->label('Group / Kolektor')
+                            ->relationship('group', 'group')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
 
-                        $total = $plafond + ($plafond * ($bunga + $admin) / 100);
-                        $set('sisa_pokok_preview', number_format($total, 2));
-                    })
-                    ->columnSpan(1),
+                                $group = \App\Models\Group::find($state);
 
-            ])
-            ->columns(3);
+                                if ($group) {
 
-        }
+                                    $set('nama_kolektor', $group->user->name ?? '-');
+                                    $set('nama_group', $group->group ?? '-');
+                                    $set('telepon_kolektor', $group->user->phone ?? '-');
+
+                                }
+
+                            }),
+
+                        TextInput::make('nama_group')
+                            ->label('Nama Group')
+                            ->disabled()
+                            ->dehydrated(false),
+
+                        TextInput::make('nama_kolektor')
+                            ->label('Nama Kolektor')
+                            ->disabled()
+                            ->dehydrated(false),
+
+                        TextInput::make('telepon_kolektor')
+                            ->label('No HP Kolektor')
+                            ->disabled()
+                            ->dehydrated(false),
+
+                    ]),
+
+                ])
+                ->collapsible(),
+            Section::make('Perhitungan Kredit')
+                ->schema([
+
+                    Grid::make([
+                        'default' => 1,
+                        'md' => 2,
+                        'xl' => 2,
+                    ])->schema([
+
+                        DatePicker::make('tanggal_pengajuan')
+                            ->label('Tanggal Pengajuan')
+                            ->default(now())
+                            ->required(),
+
+                        TextInput::make('jangka_waktu')
+                            ->label('Jangka Waktu')
+                            ->numeric()
+                            ->suffix('Hari')
+                            ->default(100)
+                            ->required(),
+
+                        TextInput::make('plafond')
+                            ->label('Plafond')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->live()
+                            ->required(),
+
+                        TextInput::make('bunga_persen')
+                            ->label('Bunga (%)')
+                            ->numeric()
+                            ->live()
+                            ->default(15)
+                            ->required(),
+
+                        TextInput::make('admin_persen')
+                            ->label('Admin (%)')
+                            ->numeric()
+                            ->live()
+                            ->default(5)
+                            ->required(),
+
+                        TextInput::make('prov_adm')
+                            ->label('Provisi / Administrasi')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        TextInput::make('materai')
+                            ->label('Materai')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        TextInput::make('op')
+                            ->label('OP')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        TextInput::make('kyd')
+                            ->label('KYD')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        TextInput::make('biaya_lain')
+                            ->label('Biaya Lain')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                    ]),
+                    Textarea::make('keterangan_biaya_lain')
+                        ->label('Keterangan Biaya Lain')
+                        ->rows(2)
+                        ->columnSpanFull(),
+                    TextInput::make('jaminan')
+                        ->label('Jaminan'),
+
+
+                ])
+                ->collapsible(),
+
+            Section::make('Preview Total Tagihan')
+                ->schema([
+
+                    Placeholder::make('preview_total')
+                        ->label('Total Tagihan')
+                        ->content(function (callable $get) {
+
+                            $plafond = (float) ($get('plafond') ?? 0);
+                            $bunga = (float) ($get('bunga_persen') ?? 0);
+                            $admin = (float) ($get('admin_persen') ?? 0);
+
+                            $total = $plafond + ($plafond * ($bunga + $admin) / 100);
+
+                            return 'Rp ' . number_format($total, 0, ',', '.');
+
+                        }),
+
+                ])
+                ->compact(),
+
+        ])
+        ->columns(1);
+}
 
     public static function table(Table $table): Table
     {
