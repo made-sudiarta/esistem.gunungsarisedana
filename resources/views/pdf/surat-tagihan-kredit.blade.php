@@ -166,35 +166,43 @@
 
     <div class="header-line" style="margin-bottom:0px;"></div>
 
-    <div class="text-right mb-1">
+    <div class="text-right mb-1" >
         Denpasar, {{ $tanggalSurat }}
     </div>
 
-    <table class="detail-table" style="margin-top:-25px;">
+    <table class="detail-table mb-10" style="margin-top:-19px; width:100%; border-collapse:collapse;">
         <tr>
-            <td style="width: 110px;">Nomor</td>
-            <td style="width: 10px;">:</td>
-            <td>{{ $surat->nomor_surat }}</td>
+            <td style="width:110px; padding:0; line-height:1.2;">Nomor</td>
+            <td style="width:10px; padding:0; line-height:1.2;">:</td>
+            <td style="padding:0; line-height:1.2;">{{ $surat->nomor_surat }}</td>
         </tr>
         <tr>
-            <td>Lampiran</td>
-            <td>:</td>
-            <td>-</td>
+            <td style="padding:0; line-height:1.2;">Lampiran</td>
+            <td style="padding:0; line-height:1.2;">:</td>
+            <td style="padding:0; line-height:1.2;">-</td>
         </tr>
         <tr>
-            <td>Perihal</td>
-            <td>:</td>
-            <td><span class="fw-bold">{{ $jenisSpLabel }}</span></td>
+            <td style="padding:0; line-height:1.2;">Perihal</td>
+            <td style="padding:0; line-height:1.2;">:</td>
+            <td style="padding:0; line-height:1.2;">
+                <span class="fw-bold">{{ $jenisSpLabel }}</span>
+            </td>
         </tr>
     </table>
 
-    <br>
-    <div class="mb-1">Kepada Yth.</div>
-    <div class="fw-bold mb-1">{{ $nama }}</div>
-    <div class="mb-1">{{ $alamat }}</div>
-    <div class="mb-20">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Di Tempat</div>
+    
+    <div style="line-height: 1.2; margin-bottom: 0;">Kepada Yth.</div>
+    <div class="fw-bold" style="line-height: 1.2; margin-bottom: 0;">
+        {{ $nama }}
+    </div>
+    <div style="line-height: 1.2; margin-bottom: 0;">
+        {{ $alamat }}
+    </div>
+    <div style="line-height: 1.2; margin-bottom: 10px;">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Di Tempat
+    </div>
 
-    <div class="text-center mb-20">
+    <div class="text-center mb-10">
         <div class="fw-bold fs-14 underline">{{ $jenisSpLabel }}</div>
     </div>
 
@@ -263,13 +271,13 @@
     @endif
 
     @if ($surat->keterangan)
-        <div class="mb-1" style="text-align: justify;">
+        <div class="mb-1" style="text-align:justify; margin-bottom:10px;">
             <span class="fw-bold">Keterangan tambahan:</span><br>
             {{ $surat->keterangan }}
         </div>
     @endif
 
-    <div class="mb-1" style="text-align: justify;">
+    <div class="mb-1" style="text-align: justify; margin-bottom:-31px;">
         Demikian surat ini kami sampaikan untuk menjadi perhatian dan agar segera ditindaklanjuti.
         Atas kerja sama Saudara/i kami ucapkan terima kasih.
     </div>

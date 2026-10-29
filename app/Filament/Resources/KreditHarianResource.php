@@ -133,20 +133,20 @@ class KreditHarianResource extends Resource
 
                         TextInput::make('nama_lengkap')
                             ->label('Nama Lengkap')
-                            ->disabled()
+                            // ->disabled()
                             ->dehydrated()
                             ->required(),
 
                         TextInput::make('no_hp')
                             ->label('No HP')
-                            ->disabled()
+                            // ->disabled()
                             ->dehydrated(),
 
                     ]),
                     Textarea::make('alamat')
                         ->label('Alamat')
                         ->rows(3)
-                        ->disabled()
+                        // ->disabled()
                         ->dehydrated()
                         ->columnSpanFull(),
                     ])

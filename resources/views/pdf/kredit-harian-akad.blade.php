@@ -74,10 +74,10 @@
         . '/'
         . $tanggalPengajuan->format('Y');
 
-    $namaNasabah = $member?->nama_lengkap ?? $record->nama_lengkap ?? '-';
-    $tempatLahir = $member?->tempat_lahir ?? '-';
-    $tanggalLahir = !empty($member?->tanggal_lahir)
-        ? \Carbon\Carbon::parse($member->tanggal_lahir)->format('d-m-Y')
+    $namaNasabah =  $record->nama_lengkap ?? '-';
+    $tempatLahir = $record?->tempat_lahir ?? '-';
+    $tanggalLahir = !empty($record?->tanggal_lahir)
+        ? \Carbon\Carbon::parse($record->tanggal_lahir)->format('d-m-Y')
         : '-';
 
     $tanggalLahirKolektor = !empty($kolektor?->tanggal_lahir)
