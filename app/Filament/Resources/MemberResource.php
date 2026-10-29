@@ -159,7 +159,16 @@ class MemberResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('nia', 'asc')
+            ->modifyQueryUsing(function (Builder $query) {
+                $query
+                    ->orderByRaw("
+                        CASE
+                            WHEN TRIM(nia) = '0' THEN 1
+                            ELSE 0
+                        END ASC
+                    ")
+                    ->orderBy('nia', 'desc');
+            })
             ->columns([
                 // Tables\Columns\TextColumn::make('id')
                 //     ->searchable()

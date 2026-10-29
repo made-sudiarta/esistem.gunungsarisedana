@@ -9,6 +9,13 @@ use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use App\Models\TrxSimpananPokok;
+use App\Models\TrxSimpananPenyerta;
+use App\Models\TrxSimpananWajib;
+use Illuminate\Support\Collection;
+use Filament\Infolists\Components\ViewEntry;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class ViewMember extends ViewRecord
 {
@@ -96,6 +103,12 @@ class ViewMember extends ViewRecord
                                     ->placeholder(number_format($saldoWajib, 0, ',', '.')) // Menggunakan placeholder untuk menampilkan saldo
                             ]),
                     ]),
+                Section::make('Riwayat Transaksi Simpanan')
+                    ->schema([
+                        ViewEntry::make('riwayat_simpanan')
+                            ->view('filament.infolists.riwayat-simpanan')
+                            ->state(fn () => $this->getRiwayatSimpanan()),
+                    ]),
             ]);
     }
 
@@ -117,4 +130,79 @@ class ViewMember extends ViewRecord
 
         return $data;
     }
+    protected function getRiwayatSimpanan(): Collection
+    {
+        $memberId = $this->record->id;
+
+        $pokok = TrxSimpananPokok::where('member_id', $memberId)
+            ->get()
+            ->map(fn ($trx) => [
+                'id' => $trx->id,
+                'tanggal' => $trx->tanggal_trx,
+                'pokok' => (float) $trx->kredit - (float) $trx->debit,
+                'penyerta' => 0,
+                'wajib' => 0,
+            ]);
+
+        $penyerta = TrxSimpananPenyerta::where('member_id', $memberId)
+            ->get()
+            ->map(fn ($trx) => [
+                'id' => $trx->id,
+                'tanggal' => $trx->tanggal_trx,
+                'pokok' => 0,
+                'penyerta' => (float) $trx->kredit - (float) $trx->debit,
+                'wajib' => 0,
+            ]);
+
+        $wajib = TrxSimpananWajib::where('member_id', $memberId)
+            ->get()
+            ->map(fn ($trx) => [
+                'id' => $trx->id,
+                'tanggal' => $trx->tanggal_trx,
+                'pokok' => 0,
+                'penyerta' => 0,
+                'wajib' => (float) $trx->kredit - (float) $trx->debit,
+            ]);
+
+        $riwayat = $pokok
+            ->concat($penyerta)
+            ->concat($wajib)
+            ->sortBy('tanggal')
+            ->values();
+
+        $saldo = 0;
+
+        return $riwayat->map(function ($trx, $index) use (&$saldo) {
+            $saldo += $trx['pokok'] + $trx['penyerta'] + $trx['wajib'];
+
+            return array_merge($trx, [
+                'no' => $index + 1,
+                'saldo' => $saldo,
+            ]);
+        });
+    }
+    protected function getRiwayatSimpananPaginated(): LengthAwarePaginator
+{
+    $riwayat = $this->getRiwayatSimpanan();
+
+    $perPage = 50;
+
+    $currentPage = Paginator::resolveCurrentPage('riwayat_page');
+
+    $items = $riwayat
+        ->forPage($currentPage, $perPage)
+        ->values();
+
+    return new LengthAwarePaginator(
+        $items,
+        $riwayat->count(),
+        $perPage,
+        $currentPage,
+        [
+            'path' => request()->url(),
+            'pageName' => 'riwayat_page',
+            'query' => request()->query(),
+        ]
+    );
+}
 }
