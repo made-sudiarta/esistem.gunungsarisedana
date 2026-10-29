@@ -105,6 +105,68 @@
         .small-note {
             font-size: 11px;
         }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 14px;
+            font-size: 8pt;
+            line-height: 1.2;
+            color: #222;
+            border: 1px solid #b8b8b8;
+        }
+
+        .info-table th {
+            background-color: #e9ecef;
+            color: #222;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px 7px;
+            border: 1px solid #b8b8b8;
+        }
+
+        .info-table td {
+            padding: 2px;
+            border: 1px solid #d2d2d2;
+            vertical-align: middle;
+        }
+
+        .info-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .info-table .col-no {
+            width: 8%;
+            text-align: center;
+        }
+
+        .info-table .col-uraian {
+            width: 57%;
+        }
+
+        .info-table .col-jumlah {
+            width: 35%;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .info-table tfoot td {
+            background-color: #e9ecef;
+            border-top: 1.5px solid #777;
+            padding: 5px;
+        }
+
+        .info-table .total-label,
+        .info-table .total-nominal {
+            font-weight: bold;
+        }
+
+        .info-table .total-label {
+            text-align: left;
+        }
+
+        .info-table .total-nominal {
+            font-size: 8pt;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +185,7 @@
             'SP1' => 'SURAT PERINGATAN I',
             'SP2' => 'SURAT PERINGATAN II',
             'SP3' => 'SURAT PERINGATAN III',
+            'SOMASI' => 'SURAT SOMASI',
             default => 'SURAT TAGIHAN KREDIT',
         };
 
@@ -175,17 +238,23 @@
             <td style="width:110px; padding:0; line-height:1.2;">Nomor</td>
             <td style="width:10px; padding:0; line-height:1.2;">:</td>
             <td style="padding:0; line-height:1.2;">{{ $surat->nomor_surat }}</td>
-        </tr>
+        </tr> 
+        @if($surat->jenis_sp!=="SOMASI")
         <tr>
             <td style="padding:0; line-height:1.2;">Lampiran</td>
             <td style="padding:0; line-height:1.2;">:</td>
             <td style="padding:0; line-height:1.2;">-</td>
         </tr>
+        @endif
         <tr>
             <td style="padding:0; line-height:1.2;">Perihal</td>
             <td style="padding:0; line-height:1.2;">:</td>
             <td style="padding:0; line-height:1.2;">
+                @if($surat->jenis_sp=="SOMASI")
+                 <span class="fw-bold">Somasi Atas Pinjaman Yang Telah Jatuh Tempo</span>
+                @else
                 <span class="fw-bold">{{ $jenisSpLabel }}</span>
+                @endif
             </td>
         </tr>
     </table>
@@ -198,17 +267,95 @@
     <div style="line-height: 1.2; margin-bottom: 0;">
         {{ $alamat }}
     </div>
+    @if($alamat =="-")
     <div style="line-height: 1.2; margin-bottom: 10px;">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Di Tempat
     </div>
-
+    @endif
+    @if($surat->jenis_sp!=="SOMASI")
     <div class="text-center mb-10">
         <div class="fw-bold fs-14 underline">{{ $jenisSpLabel }}</div>
     </div>
+    @endif
 
     <div class="mb-10">Dengan hormat,</div>
+    @if($surat->jenis_sp == "SOMASI")
+    <div class="mb-10" style="text-align: justify; line-height: 1.2;">
+        Berdasarkan catatan pinjaman Koperasi Simpan Pinjam Gunung Sari Sedana
+        Denpasar atas nama <b>{{ $nama }}</b>, dengan nomor pokok kredit
+        <b>{{ $surat->no_pokok }}</b>, serta Surat Peringatan/Pemberitahuan
+        Penyelesaian Pinjaman (SP3) Nomor
+        <b>{{ $nomorSp3 ?? '-' }}</b>
+        tanggal
+        {{ $tanggalSp3
+            ? \Carbon\Carbon::parse($tanggalSp3)->translatedFormat('d F Y')
+            : '-' }},
+        pinjaman tersebut telah jatuh tempo pada tanggal
+        <b>{{ $surat->tanggal_jatuh_tempo
+            ? \Carbon\Carbon::parse($surat->tanggal_jatuh_tempo)->translatedFormat('d F Y')
+            : '-' }}</b>.
+        Sampai dengan tanggal surat ini, kewajiban tersebut belum diselesaikan
+        dan belum terdapat tanggapan penyelesaian yang kami terima.
+    </div>
+     <div class="mb-10" style="text-align: justify; line-height:1.2;">
+        Adapun rincian kewajiban per tanggal {{ $tanggalSurat }} adalah sebagai berikut:
+    </div>
+    @php
+        $sisaPokok = (float) $surat->sisa_pokok_kredit;
+        $tunggakanBunga = (float) $surat->total_tunggakan_bunga;
+        $denda = $tunggakanBunga * 0.25;
+        $totalKewajiban = $sisaPokok + $tunggakanBunga + $denda;
 
-    <div class="mb-10" style="text-align: justify;">
+        $rupiah = fn ($nilai) => 'Rp ' . number_format($nilai, 0, ',', '.');
+    @endphp
+
+    <table class="info-table">
+        <thead>
+            <tr>
+                <th class="col-no">No.</th>
+                <th class="col-uraian">Uraian</th>
+                <th class="col-jumlah">Jumlah</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="col-no">1</td>
+                <td>Sisa Pokok Kredit</td>
+                <td class="col-jumlah">{{ $rupiah($sisaPokok) }}</td>
+            </tr>
+            <tr>
+                <td class="col-no">2</td>
+                <td>Tunggakan Bunga</td>
+                <td class="col-jumlah">{{ $rupiah($tunggakanBunga) }}</td>
+            </tr>
+            <tr>
+                <td class="col-no">3</td>
+                <td>Denda yang diperhitungkan sesuai perjanjian (25%)</td>
+                <td class="col-jumlah">{{ $rupiah($denda) }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="total-label">Total Kewajiban</td>
+                <td class="col-jumlah total-nominal">{{ $rupiah($totalKewajiban) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="mb-10" style="text-align: justify; line-height:1.2;">
+        Sehubungan dengan hal tersebut, kami menyampaikan somasi dan meminta Bapak/Ibu untuk:
+        <br>1. Melunasi Kewajiban tersebut atau menyampaikan usulan penyelesaian secara tertulis.
+        <br>2. Menghubungi administrasi bagian kredit Koperasi Simpan Pinjam Gunung Sari Sedana Denpasar dalam waktu 7 (tujuh) hari kalendar sejak surat ini diterima.
+        <br>3. Apabila terdapat keberatan atas rincian kewajiban, menyampaikannya agar dapat ditinjau dan dibahas berdasarkan dokumen serta perjanjian pinjaman yang berlaku.
+    </div>
+    <div class="mb-10" style="text-align: justify; line-height:1.2;">
+        Apabila sampai dengan batas waktu tersebut tidak terdapat penyelesaian atau tanggapan, Koperasi akan mempertimbangkan langkah hukum perdata sesuai ketentuan yang berlaku. Setiap tindakan terkait kendaraan yang BPKB-nya berada dalam penguasaan koperasi hanya akan dilakukan berdasarkan dasar hukum dan prosedur yang sah. Surat ini bukan merupakan pemberitahuan pengambilan kendaraan secara sepihak.
+    </div>
+    <div class="mb-10" style="text-align:justify; line-height:1.2;">
+        Kami tetap membuka kesempatan untuk menyelesaikan kewajiban ini melalui komunikasi dan kesepakatan yang baik. Demikian somasi ini disampaikan agar menjadi perhatian dan ditindaklanjuti sebagaimana mestinya.
+    </div>
+    @else
+    <div class="mb-10" style="text-align: justify; ">
         Berdasarkan catatan administrasi pinjaman pada Koperasi Simpan Pinjam Gunung Sari Sedana,
         sampai dengan tanggal surat ini diterbitkan, Saudara/i masih memiliki kewajiban pembayaran
         atas fasilitas kredit yang belum diselesaikan.
@@ -248,6 +395,7 @@
             <td>: Rp {{ number_format($sisaPokokKredit, 0, ',', '.') }}</td>
         </tr>
     </table>
+    @endif
 
     @if ($surat->jenis_sp === 'SP1')
         <div class="mb-12" style="text-align: justify;">
@@ -277,12 +425,14 @@
         </div>
     @endif
 
-    <div class="mb-1" style="text-align: justify; margin-bottom:-31px;">
+    @if($surat->jenis_sp !=="SOMASI")
+    <div class="mb-1" style="text-align: justify; ">
         Demikian surat ini kami sampaikan untuk menjadi perhatian dan agar segera ditindaklanjuti.
         Atas kerja sama Saudara/i kami ucapkan terima kasih.
     </div>
+    @endif
 
-    <table class="signature-table">
+    <table class="signature-table" style="margin-top:0px">
     <tr>
         <td class="text-center">
             <div class="mb-1">Mengetahui,</div>

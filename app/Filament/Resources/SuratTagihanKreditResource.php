@@ -161,6 +161,7 @@ class SuratTagihanKreditResource extends Resource
                                 'SP1' => 'SP 1',
                                 'SP2' => 'SP 2',
                                 'SP3' => 'SP 3',
+                                'SOMASI' => 'Surat Somasi',
                             ])
                             ->required()
                             ->native(false)
@@ -315,6 +316,7 @@ class SuratTagihanKreditResource extends Resource
                         'SP1' => 'gray',
                         'SP2' => 'warning',
                         'SP3' => 'danger',
+                        'SOMASI' => 'danger',
                         default => 'gray',
                     }),
 
@@ -371,6 +373,7 @@ class SuratTagihanKreditResource extends Resource
                         'SP1' => 'SP 1',
                         'SP2' => 'SP 2',
                         'SP3' => 'SP 3',
+                        'SOMASI' => 'Surat Somasi',
                     ]),
 
                 Tables\Filters\SelectFilter::make('status_surat')
