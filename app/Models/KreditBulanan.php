@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\SuratTagihanKredit;
+use App\Models\SuratPenyerahanJaminan;
 use Carbon\Carbon;
 
 class KreditBulanan extends Model
@@ -271,5 +272,12 @@ class KreditBulanan extends Model
     public function suratTagihans(): HasMany
     {
         return $this->hasMany(SuratTagihanKredit::class, 'kredit_bulanan_id');
+    }
+    public function suratPenyerahanJaminans()
+    {
+        return $this->hasMany(
+            SuratPenyerahanJaminan::class,
+            'kredit_bulanan_id'
+        );
     }
 }

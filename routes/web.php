@@ -8,7 +8,7 @@ use App\Http\Controllers\PrintSimpananBerjangkaController;
 use App\Http\Controllers\KreditHarianPrintController;
 use App\Http\Controllers\KreditBulananPdfController;
 use App\Http\Controllers\SuratTagihanKreditPdfController;
-
+use App\Http\Controllers\SuratPenyerahanJaminanPdfController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -63,3 +63,15 @@ Route::get('/kredit-bulanan/{record}/akad-pdf', [KreditBulananPdfController::cla
     ->name('kredit-bulanan.akad-pdf');
 Route::get('/surat-tagihan-kredit/{record}/pdf', [SuratTagihanKreditPdfController::class, 'show'])
     ->name('surat-tagihan-kredit.pdf');
+
+Route::middleware('auth')->prefix('surat-penyerahan-jaminan')->name('surat-penyerahan-jaminan.')->group(function () {
+    Route::get('/{surat}/pernyataan', [
+        SuratPenyerahanJaminanPdfController::class,
+        'pernyataan',
+    ])->name('pernyataan');
+
+    Route::get('/{surat}/berita-acara', [
+        SuratPenyerahanJaminanPdfController::class,
+        'beritaAcara',
+    ])->name('berita-acara');
+});
