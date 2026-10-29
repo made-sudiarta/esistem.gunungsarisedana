@@ -61,4 +61,9 @@ class Member extends Model
         return $this->hasMany(\App\Models\KreditBulanan::class, 'member_id');
     }
 
+    public function kreditHarians(): HasMany
+    {
+        return $this->hasMany(KreditHarian::class, 'member_id', 'id');
+    }
+
 }

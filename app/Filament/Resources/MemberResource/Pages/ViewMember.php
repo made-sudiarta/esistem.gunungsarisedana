@@ -54,6 +54,8 @@ class ViewMember extends ViewRecord
         $totalKreditWajib = $member->trxSimpananWajibs()->sum('kredit');
         $saldoWajib = $totalKreditWajib - $totalDebitWajib;
 
+        $totalSimpanan = $saldoPokok + $saldoPenyerta + $saldoWajib;
+
         return $infolist
             ->schema([
                 Section::make('Informasi Anggota')
@@ -82,8 +84,50 @@ class ViewMember extends ViewRecord
                                     ->placeholder('-'),
                             ]),
                     ]),
+                
+                Section::make('Pinjaman Harian')
+                    ->icon('heroicon-o-calendar-days')
+                    ->iconColor('info')
+                    ->schema([
+                        ViewEntry::make('daftar_kredit_harian')
+                            ->hiddenLabel()
+                            ->view('filament.infolists.kredit-harian')
+                            ->state(fn () => $this->record
+                                ->kreditHarians()
+                                ->orderByDesc('tanggal_pengajuan')
+                                ->get()),
+                    ]),
+
+                Section::make('Pinjaman Bulanan')
+                    ->icon('heroicon-o-calendar')
+                    ->iconColor('warning')
+                    ->schema([
+                        ViewEntry::make('daftar_kredit_bulanan')
+                            ->hiddenLabel()
+                            ->view('filament.infolists.kredit-bulanan')
+                            ->state(fn () => $this->record
+                                ->kreditBulanans()
+                                ->orderByDesc('tanggal_pengajuan')
+                                ->get()),
+                    ]),
+
+                Section::make('Simpanan Berjangka')
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('success')
+                    ->schema([
+                        ViewEntry::make('daftar_simpanan_berjangka')
+                            ->hiddenLabel()
+                            ->view('filament.infolists.simpanan-berjangka')
+                            ->state(fn () => $this->record
+                                ->simpananberjangka()
+                                ->orderByDesc('tanggal_masuk')
+                                ->get()),
+                    ]),
 
                 Section::make('Simpanan Anggota')
+                    ->description('Total Simpanan: Rp ' . number_format($totalSimpanan, 0, ',', '.'))
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('success')
                     ->schema([
                         Grid::make(3)
                             ->schema([
@@ -100,15 +144,19 @@ class ViewMember extends ViewRecord
                                 TextEntry::make('saldoWajib')
                                     ->label('Simpanan Wajib')
                                     ->money('IDR', true)
-                                    ->placeholder(number_format($saldoWajib, 0, ',', '.')) // Menggunakan placeholder untuk menampilkan saldo
+                                    ->placeholder(number_format($saldoWajib, 0, ',', '.')), // Menggunakan placeholder untuk menampilkan saldo
+
+                                
                             ]),
                     ]),
+                
                 Section::make('Riwayat Transaksi Simpanan')
                     ->schema([
                         ViewEntry::make('riwayat_simpanan')
                             ->view('filament.infolists.riwayat-simpanan')
                             ->state(fn () => $this->getRiwayatSimpanan()),
                     ]),
+                
             ]);
     }
 
