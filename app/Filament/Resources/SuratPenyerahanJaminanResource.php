@@ -29,13 +29,16 @@ class SuratPenyerahanJaminanResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationLabel = 'Penyerahan Jaminan';
+    protected static ?string $navigationLabel = 'Surat Penyerahan Jaminan';
 
     protected static ?string $modelLabel = 'Surat Penyerahan Jaminan';
 
     protected static ?string $pluralModelLabel = 'Surat Penyerahan Jaminan';
 
-    protected static ?string $navigationGroup = 'Administrasi Kredit';
+    // protected static ?string $navigationGroup = 'Administrasi Kredit';
+
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Pinjaman Bulanan';
 
     public static function form(Form $form): Form
     {
