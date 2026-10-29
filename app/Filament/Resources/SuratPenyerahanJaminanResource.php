@@ -20,6 +20,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\KreditBulananFidusia;
+use App\Models\KreditBulananJaminan;
+
 class SuratPenyerahanJaminanResource extends Resource
 {
     protected static ?string $model = SuratPenyerahanJaminan::class;
@@ -75,16 +78,36 @@ class SuratPenyerahanJaminanResource extends Resource
                         ->live()
                         ->disabled(fn (?Model $record) => filled($record))
                         ->afterStateUpdated(function ($state, Set $set) {
-                            $kredit = KreditBulanan::with('member')
-                                ->find($state);
+                            $kredit = KreditBulanan::with([
+                                'member',
+                                'fidusias',
+                            ])->find($state);
 
                             $set('no_pokok_info', $kredit?->no_pokok ?? '-');
-
-                            $member = $kredit?->member;
-
                             $set(
                                 'nama_anggota_info',
-                                $member?->nama_lengkap ?? '-'
+                                $kredit?->member?->nama_lengkap ?? '-'
+                            );
+
+                            $fidusia = $kredit?->fidusias?->first();
+
+                            $set('jenis_kendaraan', 'Sepeda Motor');
+                            $set(
+                                'merek_tipe',
+                                trim(($fidusia?->merk ?? '') . ' ' . ($fidusia?->type ?? ''))
+                            );
+                            $set('nomor_polisi', $fidusia?->no_polisi);
+                            $set('nomor_rangka', $fidusia?->no_rangka);
+                            $set('nomor_mesin', $fidusia?->no_mesin);
+                            $set('nomor_bpkb', $fidusia?->no_bpkb);
+                            $set('atas_nama_dokumen', $fidusia?->atasnama);
+
+                            $set(
+                                'catatan',
+                                $fidusia
+                                    ? 'Warna: ' . ($fidusia->warna ?? '-') .
+                                    '; Tahun: ' . ($fidusia->tahun ?? '-')
+                                    : null
                             );
                         }),
 

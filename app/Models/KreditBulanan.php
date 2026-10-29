@@ -280,4 +280,15 @@ class KreditBulanan extends Model
             'kredit_bulanan_id'
         );
     }
+    public function fidusias()
+    {
+        return $this->hasManyThrough(
+            KreditBulananFidusia::class,
+            KreditBulananJaminan::class,
+            'kredit_bulanan_id',
+            'jaminan_id',
+            'id',
+            'id'
+        );
+    }
 }
