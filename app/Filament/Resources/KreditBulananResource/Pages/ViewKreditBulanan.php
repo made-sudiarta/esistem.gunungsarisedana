@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\KreditBulanan;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use App\Models\SuratPenyerahanJaminan;
+use Filament\Notifications\Notification;
+
 class ViewKreditBulanan extends ViewRecord
 {
     protected static string $resource = KreditBulananResource::class;
@@ -46,6 +49,41 @@ class ViewKreditBulanan extends ViewRecord
                     return response()->streamDownload(
                         fn () => print($pdf->output()),
                         'riwayat-kredit-' . $kredit->no_pokok . '.pdf'
+                    );
+                }),
+            Actions\Action::make('cetakSuratJaminan')
+                ->label('Cetak Surat Pengambilan Jaminan')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->visible(fn (): bool => $this->record->status === 'lunas')
+                ->action(function () {
+                    $surat = $this->record
+                        ->suratPenyerahanJaminans()
+                        ->with(['kreditBulanan.member'])
+                        ->latest('tanggal_surat')
+                        ->first();
+
+                    if (! $surat) {
+                        Notification::make()
+                            ->warning()
+                            ->title('Surat belum tersedia')
+                            ->body('Silakan buat data surat penyerahan jaminan terlebih dahulu.')
+                            ->send();
+
+                        return;
+                    }
+
+                    $pdf = Pdf::loadView(
+                        'pdf.kredit-bulanan.surat-pengambilan-jaminan',
+                        [
+                            'surat' => $surat,
+                            'kredit' => $this->record,
+                        ]
+                    )->setPaper('a4', 'portrait');
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'surat-pengambilan-jaminan-' . $this->record->no_pokok . '.pdf'
                     );
                 }),
 
