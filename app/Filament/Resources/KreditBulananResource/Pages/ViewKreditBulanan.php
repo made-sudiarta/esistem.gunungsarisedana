@@ -11,6 +11,9 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\KreditBulanan;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class ViewKreditBulanan extends ViewRecord
 {
     protected static string $resource = KreditBulananResource::class;
@@ -18,6 +21,34 @@ class ViewKreditBulanan extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('cetakRiwayat')
+                ->label('Cetak Riwayat Transaksi')
+                ->icon('heroicon-o-printer')
+                ->color('success')
+                ->action(function () {
+                    $kredit = $this->record->load([
+                        'member',
+                        'transaksis',
+                    ]);
+
+                    $transaksi = $kredit->transaksis
+                        ->sortBy('tanggal_transaksi')
+                        ->values();
+
+                    $pdf = Pdf::loadView(
+                        'pdf.kredit-bulanan.riwayat-transaksi',
+                        [
+                            'kredit' => $kredit,
+                            'transaksi' => $transaksi,
+                        ]
+                    )->setPaper('a4', 'landscape');
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'riwayat-kredit-' . $kredit->no_pokok . '.pdf'
+                    );
+                }),
+
             Actions\EditAction::make()
                 ->visible(fn (): bool => Auth::user()?->hasRole('super_admin') ?? false),
         ];
