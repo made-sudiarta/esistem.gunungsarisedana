@@ -137,6 +137,15 @@ class SimpananBerjangkaResource extends Resource
                 ->visible(fn () =>
                     Filament::auth()->user()?->hasRole('super_admin')
                 ),
+                Tables\Actions\Action::make('cetak_bilyet')
+                ->label('Cetak Bilyet')
+                ->icon('heroicon-o-document-text')
+                ->color('success')
+                ->url(fn ($record) => route('cetak-bilyet', $record->id))
+                ->openUrlInNewTab()
+                ->visible(fn () =>
+                    Filament::auth()->user()?->hasRole('super_admin')
+                ),
 
             ])
             ->bulkActions([

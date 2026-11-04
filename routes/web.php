@@ -15,6 +15,7 @@ use App\Models\KreditHarianTransaksi;
 use App\Http\Controllers\SimpananPenyertaKuitansiController;
 use App\Http\Controllers\SimpananPokokKuitansiController;
 use App\Http\Controllers\SimpananWajibKuitansiController;
+use App\Http\Controllers\BilyetSimpananBerjangkaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,3 +114,8 @@ Route::get(
 )
     ->middleware('auth')
     ->name('simpanan-wajib.kuitansi');
+
+    Route::get(
+    '/simpanan-berjangka/{simpananBerjangka}/cetak-bilyet',
+    [BilyetSimpananBerjangkaController::class, 'cetak']
+)->name('cetak-bilyet');

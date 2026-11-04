@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SimpananBerjangka extends Model
 {
-    use HasFactory;
-
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'kode_bilyet',
@@ -24,12 +22,19 @@ class SimpananBerjangka extends Model
         'nominal',
     ];
 
-    public function group()
+    protected $casts = [
+        'tanggal_masuk' => 'date',
+        'jangka_waktu' => 'integer',
+        'bunga_persen' => 'decimal:2',
+        'nominal' => 'decimal:2',
+    ];
+
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
-    public function member()
+    public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
     }
