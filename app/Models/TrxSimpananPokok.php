@@ -11,10 +11,14 @@ class TrxSimpananPokok extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'member_id','tanggal_trx','debit','kredit','keterangan'
+        'member_id','user_id','tanggal_trx','debit','kredit','keterangan'
     ];
     public function members(): BelongsTo
     {
         return $this->belongsTo(Member::class, 'member_id');
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

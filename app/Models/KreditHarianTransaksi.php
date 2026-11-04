@@ -12,10 +12,15 @@ class KreditHarianTransaksi extends Model
         'kredit_harian_id',
         'tanggal_transaksi',
         'jumlah',
+        'user_id',
     ];
 
     public function kreditHarian()
     {
         return $this->belongsTo(KreditHarian::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -20,6 +20,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Grid;
 use App\Filament\Resources\TransaksiKreditBulananResource\Widgets\TransaksiKreditBulananStats;
+use Filament\Tables\Actions\Action;
 
 class TransaksiKreditBulananResource extends Resource
 {
@@ -375,6 +376,17 @@ class TransaksiKreditBulananResource extends Resource
                 TextColumn::make('sisa_saldo')
                     ->label('Sisa Saldo')
                     ->money('idr'),
+            ])
+            ->actions([
+                Action::make('cetak_kuitansi')
+                    ->label('Kuitansi')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn ($record) => route(
+                        'transaksi-kredit-bulanan.kuitansi',
+                        ['transaksi' => $record->id]
+                    ))
+                    ->openUrlInNewTab(),
             ])
             ->filters([
                 Tables\Filters\Filter::make('today')

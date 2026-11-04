@@ -17,6 +17,7 @@ class CreateSimpananPokok extends CreateRecord
             $record = static::getModel()::create([
                 'tanggal_trx' => $data['tanggal_trx'],
                 'member_id'   => $trx['member_id'],
+                'user_id'     => auth()->id(),
                 'kredit'      => $trx['kredit'] ?? 0,
                 'debit'       => $trx['debit'] ?? 0,
                 'keterangan'  => $trx['keterangan'] ?? null,

@@ -9,6 +9,13 @@ use App\Http\Controllers\KreditHarianPrintController;
 use App\Http\Controllers\KreditBulananPdfController;
 use App\Http\Controllers\SuratTagihanKreditPdfController;
 use App\Http\Controllers\SuratPenyerahanJaminanPdfController;
+use App\Http\Controllers\KuitansiKreditController;
+use App\Http\Controllers\KreditHarianKuitansiController;
+use App\Models\KreditHarianTransaksi;
+use App\Http\Controllers\SimpananPenyertaKuitansiController;
+use App\Http\Controllers\SimpananPokokKuitansiController;
+use App\Http\Controllers\SimpananWajibKuitansiController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -75,3 +82,34 @@ Route::middleware('auth')->prefix('surat-penyerahan-jaminan')->name('surat-penye
         'beritaAcara',
     ])->name('berita-acara');
 });
+
+Route::get(
+    '/transaksi-kredit-bulanan/{transaksi}/kuitansi',
+    [KuitansiKreditController::class, 'cetak']
+)->name('transaksi-kredit-bulanan.kuitansi');
+
+
+Route::get(
+    '/kredit-harian/transaksi/{id}/kuitansi',
+    [KreditHarianKuitansiController::class, 'cetak']
+)->name('kredit-harian.kuitansi');
+
+Route::get(
+    '/simpanan-penyerta/{id}/kuitansi',
+    [SimpananPenyertaKuitansiController::class, 'cetak']
+)->middleware('auth')->name('simpanan-penyerta.kuitansi');
+
+
+Route::get(
+    '/simpanan-pokok/{id}/kuitansi',
+    [SimpananPokokKuitansiController::class, 'cetak']
+)
+    ->middleware('auth')
+    ->name('simpanan-pokok.kuitansi');
+
+    Route::get(
+    '/simpanan-wajib/{id}/kuitansi',
+    [SimpananWajibKuitansiController::class, 'cetak']
+)
+    ->middleware('auth')
+    ->name('simpanan-wajib.kuitansi');

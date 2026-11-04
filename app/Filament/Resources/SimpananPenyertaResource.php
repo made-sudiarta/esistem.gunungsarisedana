@@ -129,7 +129,15 @@ class SimpananPenyertaResource extends Resource
                     ->default(),
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('cetak')
+                    ->label('Kuitansi')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn ($record) => route(
+                        'simpanan-penyerta.kuitansi',
+                        ['id' => $record->id]
+                    ))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

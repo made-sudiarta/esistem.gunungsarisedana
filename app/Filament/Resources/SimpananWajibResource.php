@@ -139,6 +139,15 @@ class SimpananWajibResource extends Resource
                 }),
         ])
         ->actions([
+            Tables\Actions\Action::make('cetak')
+                ->label('Kuitansi')
+                ->icon('heroicon-o-printer')
+                ->color('success')
+                ->url(fn ($record) => route(
+                    'simpanan-wajib.kuitansi',
+                    ['id' => $record->id]
+                ))
+                ->openUrlInNewTab(),
             // Tables\Actions\EditAction::make(),
         ])
         ->bulkActions([

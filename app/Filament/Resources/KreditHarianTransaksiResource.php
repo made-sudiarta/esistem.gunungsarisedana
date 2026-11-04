@@ -146,6 +146,17 @@ class KreditHarianTransaksiResource extends Resource
                 ->money('idr', true),
 
         ])
+        ->actions([
+            Tables\Actions\Action::make('cetak')
+                ->label('Kuitansi')
+                ->icon('heroicon-o-printer')
+                ->color('success')
+                ->url(fn ($record) => route(
+                    'kredit-harian.kuitansi',
+                    ['id' => $record->id]
+                ))
+                ->openUrlInNewTab(),
+        ])
         ->defaultSort('tanggal_transaksi', 'asc');
     }
 

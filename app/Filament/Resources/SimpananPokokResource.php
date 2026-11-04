@@ -130,7 +130,15 @@ class SimpananPokokResource extends Resource
                     ),
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('cetak')
+                    ->label('Kuitansi')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn ($record) => route(
+                        'simpanan-pokok.kuitansi',
+                        ['id' => $record->id]
+                    ))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -20,6 +20,7 @@ class CreateSimpananPenyerta extends CreateRecord
                 'kredit'      => $trx['kredit'] ?? 0,
                 'debit'       => $trx['debit'] ?? 0,
                 'keterangan'  => $trx['keterangan'] ?? null,
+                'user_id'     => auth()->id(),
             ]);
 
             $firstRecord ??= $record;

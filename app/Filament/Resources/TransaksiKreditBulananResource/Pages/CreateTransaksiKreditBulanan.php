@@ -6,6 +6,8 @@ use App\Filament\Resources\TransaksiKreditBulananResource;
 use App\Models\KreditBulanan;
 use App\Models\TransaksiKreditBulanan;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class CreateTransaksiKreditBulanan extends CreateRecord
 {
@@ -76,5 +78,24 @@ class CreateTransaksiKreditBulanan extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function afterCreate(): void
+    {
+        Notification::make()
+            ->success()
+            ->title('Transaksi berhasil disimpan')
+            ->body('Silakan cetak kuitansi pembayaran.')
+            ->actions([
+                Action::make('cetak')
+                    ->label('Cetak Kuitansi')
+                    ->url(route(
+                        'transaksi-kredit-bulanan.kuitansi',
+                        $this->record
+                    ))
+                    ->openUrlInNewTab(),
+            ])
+            ->persistent()
+            ->send();
     }
 }

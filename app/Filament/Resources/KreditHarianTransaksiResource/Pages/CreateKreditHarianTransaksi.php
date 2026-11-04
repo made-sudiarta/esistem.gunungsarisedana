@@ -37,6 +37,7 @@ class CreateKreditHarianTransaksi extends CreateRecord
                     'kredit_harian_id' => $kredit->id,
                     'tanggal_transaksi' => $item['tanggal_transaksi'],
                     'jumlah' => $item['jumlah'],
+                    'user_id' => auth()->id(),
                 ]);
 
                 // ⬇️ update saldo
