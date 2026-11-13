@@ -471,7 +471,8 @@
         <tr>
 
             <td class="report-logo">
-                <img src="{{ public_path('images/logo-koperasi.png') }}" style="width: 55px; height: 55px;">
+                
+                    <img src="{{ asset('images/logo-koperasi.png') }}" style="width: 55px; height: 55px;">
             </td>
 
             <td class="report-identity">
@@ -720,7 +721,7 @@
 
                 <td class="report-logo">
 
-                    <img src="{{ public_path('images/logo-koperasi.png') }}">
+                    <img src="{{ asset('images/logo-koperasi.png') }}">
 
                 </td>
 
