@@ -10,19 +10,29 @@ class BilyetSimpananBerjangkaController extends Controller
 {
     public function cetak(SimpananBerjangka $simpananBerjangka)
     {
-        $simpanan = $simpananBerjangka;
+        // Ambil data simpanan beserta relasi anggota
+        $simpanan = SimpananBerjangka::with(['member', 'group'])
+            ->findOrFail($simpananBerjangka->id);
 
-        $tanggalMasuk = Carbon::parse($simpanan->tanggal_masuk);
+        // Tanggal penempatan
+        $tanggalMasuk = Carbon::parse(
+            $simpanan->tanggal_masuk
+        );
 
+        // Tanggal jatuh tempo
         $tanggalJatuhTempo = $tanggalMasuk->copy()
             ->addMonths((int) $simpanan->jangka_waktu);
 
+        // Terbilang nominal
         $terbilangNominal = trim(
             $this->terbilang((int) $simpanan->nominal)
         );
 
-        $terbilangNominal = ucfirst($terbilangNominal) . ' rupiah';
+        $terbilangNominal = ucfirst(
+            $terbilangNominal
+        ) . ' rupiah';
 
+        // Render Blade PDF
         $pdf = Pdf::loadView(
             'pdf.bilyet-simpanan-berjangka',
             compact(
@@ -33,16 +43,28 @@ class BilyetSimpananBerjangkaController extends Controller
             )
         );
 
-        // Ukuran kertas khusus: 210 mm x 60 mm
-        $width = 210 * 72 / 25.4;
-        $height = 90 * 72 / 25.4;
+        /*
+        |--------------------------------------------------------------------------
+        | UKURAN KERTAS CUSTOM
+        |--------------------------------------------------------------------------
+        |
+        | Lebar  : 110 mm (11 cm)
+        | Tinggi : 212 mm (21,2 cm)
+        |
+        */
+
+        $width = 212 * 72 / 25.4;
+        $height = 110 * 72 / 25.4;
 
         $pdf->setPaper([0, 0, $width, $height]);
+           
 
+        // Tampilkan PDF di browser
         return $pdf->stream(
             'Bilyet-' . $simpanan->kode_bilyet . '.pdf'
         );
     }
+
     private function terbilang(int $angka): string
     {
         $angka = abs($angka);

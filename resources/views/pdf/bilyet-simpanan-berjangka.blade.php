@@ -3,40 +3,49 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <title>Bilyet Simpanan Berjangka</title>
 
     <style>
         @page {
-            size: 210mm 90mm;
+            size: 212mm 110mm;
             margin: 0;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         html, body {
-            width: 210mm;
-            height: 90mm;
+            width: 212mm;
+            height: 110mm;
             margin: 0;
             padding: 0;
             font-family: DejaVu Sans, sans-serif;
             color: #18364d;
         }
 
-        .bilyet {
-            position: relative;
-            width: 210mm;
-            height: 90mm;
-            overflow: hidden;
-            page-break-inside: avoid;
-            background: #fff;
+        body {
+            font-size: 9px;
         }
 
-        /* Bingkai */
+        /* AREA BILYET */
+        .bilyet {
+            position: absolute;
+            top: 20mm;
+            left: 12mm;
+            width: 190mm;
+            height: 73mm;
+            overflow: hidden;
+            background: #fff;
+            page-break-inside: avoid;
+        }
+
         .frame {
             position: absolute;
-            top: 2.5mm;
-            left: 2.5mm;
-            width: 205mm;
-            height: 85mm;
-            border: 1px solid #214e70;
-            padding: 0;
+            inset: 0;
+            width: 189mm;
+            height: 73mm;
+            /* border: 1px solid #214e70; */
         }
 
         .inner {
@@ -45,221 +54,160 @@
             height: 100%;
         }
 
-        /* Header */
-        .header {
-            position: absolute;
-            top: 2mm;
-            left: 3mm;
-            right: 3mm;
-            height: 14mm;
-            padding-bottom:20px;
-            border-bottom: 1px solid #214e70;
-        }
-
-        .logo {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 16mm;
-            height: 13mm;
-        }
-
-        .logo img {
-            width: 17mm;
-            height: 17mm;
-        }
-
-        .identity {
-            position: absolute;
-            left: 25mm;
-            top: 1mm;
-            width: 125mm;
-        }
-
-        .koperasi {
-            font-size: 12px;
-            font-weight: bold;
-            color: #173f5f;
-            letter-spacing: .3px;
-        }
-
-        .alamat {
-            font-size: 8px;
-            line-height: 1.2;
-            margin-top: 1mm;
-        }
-
+        /* JUDUL */
         .title {
             position: absolute;
-            right: 0;
-            top: 0;
-            width: 49mm;
-            text-align: right;
+            top: 3mm;
+            left: 5mm;
+            right: 5mm;
+            text-align: center;
+            padding-bottom: 2.5mm;
+            /* border-bottom: 1px solid #214e70; */
         }
 
         .title h2 {
             margin: 0;
             font-size: 16px;
             color: #173f5f;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
-        .title .subtitle {
-            font-size: 8px;
-            margin-top: 1mm;
-        }
-
-        .title .number {
+        .subtitle {
             font-size: 12px;
             font-weight: bold;
             margin-top: 1mm;
+            text-decoration:underline;
         }
 
-        /* Data utama */
-        .main-data {
-            position: absolute;
-            top: 25mm;
-            left: 4mm;
-            right: 4mm;
-            height: 12mm;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .data-table td {
-            padding: 0 2mm;
-            vertical-align: top;
-            overflow: hidden;
-        }
-
-        .data-table td:first-child {
-            padding-left: 0;
-        }
-
-        .label {
+        .number {
             font-size: 8px;
-            color: #647887;
-            margin-bottom: 1.2mm;
-            white-space: nowrap;
-        }
-
-        .value {
-            font-size: 12px;
             font-weight: bold;
-            color: #173f5f;
-            white-space: nowrap;
+            margin-top: 1mm;
         }
 
-        .amount {
-            font-size: 12px;
-            color: #0d4268;
-        }
-
-        /* Data tanggal */
-        .date-data {
-            position: absolute;
-            top: 55mm;
-            left: 4mm;
-            right: 4mm;
-            /* border-top: 1px dotted #a9b8c3; */
-            padding-top: 2mm;
-        }
-
-        .date-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .date-table td {
-            vertical-align: top;
-            padding-right: 3mm;
-        }
-
-        /* Footer */
-        .note {
-            position: absolute;
-            left: 4mm;
-            bottom: 5mm;
-            width: 112mm;
-            font-size: 7px;
-            font-style: italic;
-            line-height: 1.5;
-            color: #647887;
-        }
-
-        .signature {
-            position: absolute;
-            right: 4mm;
-            bottom: 5mm;
-            width: 48mm;
-            text-align: center;
-            font-size: 8px;
-        }
-
-        .signature-space {
-            height: 10mm;
-        }
-
-        .signature-name {
-            /* border-top: 1px solid #526575; */
-            padding-top: 1mm;
-            font-weight: bold;
-        }
-
+        /* WATERMARK */
         .watermark {
             position: absolute;
-            top: 25mm;
+            top: 26mm;
             left: 50%;
-            width: 100mm;
-            transform: translateX(-50%) rotate(-15deg);
+            width: 65mm;
+            margin-left: -32.5mm;
             text-align: center;
-            font-size: 20px;
+            font-size: 13px;
             font-weight: bold;
             color: #dce5eb;
-            opacity: 0.20;
+            opacity: 0.12;
             z-index: 0;
         }
 
         .watermark img {
             display: block;
-            width: 25mm;
-            height: 25mm;
-            object-fit: contain;
-            margin: 0 auto 2mm auto;
+            width: 18mm;
+            height: 18mm;
+            margin: 0 auto 1mm auto;
         }
 
         .watermark div {
             letter-spacing: 1px;
         }
-        .member-address {
-            font-size: 6px;
+
+        /* LABEL DAN NILAI */
+        .label {
+            font-size: 7px;
+            color: #647887;
+            margin-bottom: 1.5mm;
             font-weight: normal;
+        }
+
+        .value {
+            font-size: 10px;
+            font-weight: bold;
+            color: #173f5f;
+            line-height: 1.4;
+        }
+
+        /* DATA UTAMA */
+        .main-data {
+            position: absolute;
+            top: 20mm;
+            left: 5mm;
+            right: 5mm;
+            height: 17mm;
+            z-index: 1;
+        }
+
+        .column {
+            position: absolute;
+            top: 0;
+            height: 17mm;
+            padding-right: 3mm;
+            /* border-right: 1px dotted #a9b8c3; */
+        }
+
+        .column:last-child {
+            border-right: none;
+        }
+
+        .col-member {
+            left: 0;
+            width: 70mm;
+        }
+
+        .col-nominal {
+            left: 73mm;
+            width: 45mm;
+        }
+
+        .col-bunga {
+            left: 121mm;
+            width: 31mm;
+        }
+
+        .col-jangka {
+            left: 155mm;
+            width: 32mm;
+        }
+
+        .member-name {
+            font-size: 10px;
+            font-weight: bold;
+            color: #173f5f;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .member-address {
+            font-size: 7px;
             color: #647887;
             margin-top: 1.5mm;
             line-height: 1.3;
-            white-space: normal;
         }
+
+        .amount {
+            font-size: 13px;
+            color: #0d4268;
+            font-weight: bold;
+        }
+
+        /* TERBILANG */
         .terbilang-data {
             position: absolute;
-            top: 41mm;
-            left: 4mm;
-            right: 4mm;
-            width: auto;
-            padding: 2mm 0;
+            top: 35mm;
+            left: 5mm;
+            right: 5mm;
+            height: 5mm;
+            padding: 2mm 3mm;
             border-top: 1px dotted #a9b8c3;
             border-bottom: 1px dotted #a9b8c3;
+            z-index: 1;
         }
 
         .terbilang-label {
-            font-size: 8px;
+            font-size: 7px;
             color: #647887;
-            margin-bottom: 1mm;
             font-weight: bold;
+            margin-bottom: 1mm;
+            text-align:center;
         }
 
         .terbilang-value {
@@ -267,134 +215,233 @@
             color: #173f5f;
             font-style: italic;
             font-weight: bold;
+            line-height: 1.3;
+            text-transform: capitalize;
+            text-align:center;
+        }
+
+        /* TANGGAL */
+        .date-data {
+            position: absolute;
+            top: 54mm;
+            left: 5mm;
+            width: 105mm;
+            z-index: 1;
+        }
+
+        .date-item {
+            position: absolute;
+            top: 0;
+            width: 48mm;
+        }
+
+        .date-placement {
+            left: 0;
+        }
+
+        .date-maturity {
+            left: 53mm;
+        }
+
+        .date-item .value {
+            font-size: 9px;
+        }
+
+        /* KETERANGAN */
+        .note {
+            position: absolute;
+            left: 5mm;
+            bottom: 3mm;
+            width: 105mm;
+            font-size: 6.5px;
+            font-style: italic;
+            line-height: 1.4;
+            color: #647887;
+            z-index: 1;
+        }
+
+        /* TANDA TANGAN */
+        .signature {
+            position: absolute;
+            right: 5mm;
+            bottom: 2mm;
+            width: 65mm;
+            text-align: center;
+            font-size: 7px;
+            z-index: 1;
+        }
+
+        .signature-space {
+            height: 7mm;
+        }
+
+        .signature-name {
+            padding-top: 0.5mm;
+            font-weight: bold;
+            text-decoration: underline;
+            font-size: 8px;
         }
     </style>
 </head>
 
 <body>
+
+@php
+    $tanggalMasuk = \Carbon\Carbon::parse(
+        $simpanan->tanggal_masuk
+    );
+
+    $tanggalJatuhTempo = $tanggalMasuk->copy()->addMonths(
+        (int) $simpanan->jangka_waktu
+    );
+
+    $logoPath = public_path('images/logo-koperasi.png');
+
+    $logoBase64 = null;
+
+    if (file_exists($logoPath)) {
+        $logoBase64 = 'data:image/png;base64,' . base64_encode(
+            file_get_contents($logoPath)
+        );
+    }
+@endphp
+
 <div class="bilyet">
     <div class="frame">
         <div class="inner">
 
-            {{-- WATERMARK --}}
-            <div class="watermark">
-                <img src="{{ public_path('images/logo-koperasi.png') }}" alt="Logo Koperasi">
-                <div>KSP. GUNUNG SARI SEDANA</div>
-            </div>
-
-            {{-- HEADER --}}
-            <div class="header">
-                <div class="logo">
-                    <img src="{{ public_path('images/logo-koperasi.png') }}">
+            <!-- {{-- WATERMARK --}}
+            @if($logoBase64)
+                <div class="watermark">
+                    <img src="{{ $logoBase64 }}" alt="Logo">
+                    <div>KSP. GUNUNG SARI SEDANA</div>
                 </div>
+            @endif -->
 
-                <div class="identity">
-                    <div class="koperasi">
-                        KOPERASI SIMPAN PINJAM GUNUNG SARI SEDANA
-                    </div>
+            {{-- JUDUL --}}
+            <div class="title">
+                <!-- <h2>BILYET</h2> -->
 
-                    <div class="alamat">
-                        Nomor Badan Hukum: 396 / BH / XXVII.9 / XII / 2015<br>
-                        Jl. Gunung Guntur Gg. XIX No. 9 Padangsambian,
-                        Denpasar Barat | Telp. (0361) 8448574<br>
-                        E-Mail: gunungsari.sedana@gmail.com
-                    </div>
+                <div class="nomor">
+                    No. Bilyet :
                 </div>
-
-                <div class="title">
-                    <h2>BILYET</h2>
-                    <div class="subtitle">SIMPANAN BERJANGKA</div>
-                    <div class="number">
-                        No. {{ $simpanan->kode_bilyet }}
-                    </div>
+                @php
+                    $bulanRomawi = [
+                        1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
+                        5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
+                        9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII',
+                    ];
+                @endphp
+                <div class="subtitle">
+                    {{ $simpanan->kode_bilyet }}/ KGS / {{ $bulanRomawi[$simpanan->created_at->month] }} / {{ $simpanan->created_at->format('Y') }}
                 </div>
             </div>
 
             {{-- DATA UTAMA --}}
             <div class="main-data">
-                <table class="data-table">
-                    <tr>
-                        <td width="29%">
-                            <div class="label">NAMA ANGGOTA</div>
 
-                            <div class="value">
-                                {{ strtoupper($simpanan->nama_lengkap) }}
-                            </div>
+                {{-- NAMA ANGGOTA --}}
+                <div class="column col-member">
+                    <div class="label">NAMA ANGGOTA</div>
 
-                            <div class="member-address">
-                                {{ $simpanan->member->alamat ?? '-' }}
-                            </div>
-                        </td>
+                    <div class="member-name">
+                        {{ strtoupper($simpanan->nama_lengkap) }}
+                    </div>
 
-                        <td width="25%">
-                            <div class="label">NOMINAL SIMPANAN</div>
+                    <div class="member-address">
+                        {{ $simpanan->member->alamat ?? '-' }}
+                    </div>
+                </div>
 
-                            <div class="value amount">
-                                Rp {{ number_format($simpanan->nominal, 0, ',', '.') }}
-                            </div>
-                        </td>
+                {{-- NOMINAL --}}
+                <div class="column col-nominal">
+                    <div class="label">NOMINAL SIMPANAN</div>
 
-                        <td width="17%">
-                            <div class="label">BUNGA PER TAHUN</div>
-                            <div class="value">
-                                {{ number_format($simpanan->bunga_persen, 2, ',', '.') }}% p.a.
-                            </div>
-                        </td>
+                    <div class="value amount">
+                        Rp {{ number_format(
+                            $simpanan->nominal,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+                    </div>
+                </div>
 
-                        <td width="15%">
-                            <div class="label">JANGKA WAKTU</div>
-                            <div class="value">
-                                {{ $simpanan->jangka_waktu }} Bulan
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+                {{-- BUNGA --}}
+                <div class="column col-bunga">
+                    <div class="label">BUNGA PER TAHUN</div>
+
+                    <div class="value">
+                        {{ number_format(
+                            $simpanan->bunga_persen,
+                            2,
+                            ',',
+                            '.'
+                        ) }}% p.a.
+                    </div>
+                </div>
+
+                {{-- JANGKA WAKTU --}}
+                <div class="column col-jangka">
+                    <div class="label">JANGKA WAKTU</div>
+
+                    <div class="value">
+                        {{ $simpanan->jangka_waktu }} Bulan
+                    </div>
+                </div>
+
             </div>
-            
+
             {{-- TERBILANG --}}
             <div class="terbilang-data">
-                <div class="terbilang-label">TERBILANG</div>
+                <!-- <div class="terbilang-label">
+                    TERBILANG
+                </div> -->
+
                 <div class="terbilang-value">
                     {{ $terbilangNominal }}
                 </div>
             </div>
 
-
             {{-- TANGGAL --}}
             <div class="date-data">
-                <table class="date-table">
-                    <tr>
-                        <td width="33%">
-                            <div class="label">TANGGAL PENEMPATAN</div>
-                            <div class="value">
-                                {{ $tanggalMasuk->locale('id')->translatedFormat('d F Y') }}
-                            </div>
-                        </td>
 
-                        <td width="33%">
-                            <div class="label">TANGGAL JATUH TEMPO</div>
-                            <div class="value">
-                                {{ $tanggalJatuhTempo->locale('id')->translatedFormat('d F Y') }}
-                            </div>
-                        </td>
+                <div class="date-item date-placement">
+                    <div class="label">
+                        TANGGAL PENEMPATAN
+                    </div>
 
-                        <td width="34%">
-                            <!-- <div class="label">STATUS SIMPANAN</div>
-                            <div class="value">AKTIF</div> -->
-                        </td>
-                    </tr>
-                </table>
+                    <div class="value">
+                        {{ $tanggalMasuk->locale('id')->translatedFormat('d F Y') }}
+                    </div>
+                </div>
+
+                <div class="date-item date-maturity">
+                    <div class="label">
+                        TANGGAL JATUH TEMPO
+                    </div>
+
+                    <div class="value">
+                        {{ $tanggalJatuhTempo->locale('id')->translatedFormat('d F Y') }}
+                    </div>
+                </div>
+
             </div>
 
             {{-- KETERANGAN --}}
             <div class="note">
-                Bilyet ini merupakan bukti kepemilikan simpanan berjangka
-                pada Koperasi Simpan Pinjam Gunung Sari Sedana. 
+                Bilyet ini merupakan bukti kepemilikan simpanan
+                berjangka pada Koperasi Simpan Pinjam
+                Gunung Sari Sedana.
             </div>
 
             {{-- TANDA TANGAN --}}
             <div class="signature">
-                Denpasar, {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}<br>
+                Denpasar,
+                {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}
+
+                <br>
+
                 Ketua KSP. Gunung Sari Sedana
 
                 <div class="signature-space"></div>
@@ -407,5 +454,6 @@
         </div>
     </div>
 </div>
+
 </body>
 </html>
